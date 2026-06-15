@@ -219,7 +219,29 @@ let lastScanTime = 0;
 let mode = "checkin";
 let currentClientId = "";
 let currentClient = null;
-  
+function beep(){
+
+  const ctx =
+    new (
+      window.AudioContext ||
+      window.webkitAudioContext
+    )();
+
+  const osc =
+    ctx.createOscillator();
+
+  osc.type = "sine";
+  osc.frequency.value = 1000;
+
+  osc.connect(ctx.destination);
+
+  osc.start();
+
+  setTimeout(()=>{
+    osc.stop();
+  },150);
+
+}
 async function api(action,data={}){
 
   const params =
@@ -253,21 +275,40 @@ function showResult(
 
   box.className = "card";
 
-  if(type==="checkin"){
-    box.classList.add("resultOk");
-  }
+if(type==="checkin"){
 
-  if(type==="recharge"){
-    box.classList.add("resultRecharge");
-  }
+  box.classList.add("resultOk");
 
-  if(type==="error"){
-    box.classList.add("resultError");
-  }
+  beep();
 
   if(navigator.vibrate){
-    navigator.vibrate(150);
+    navigator.vibrate([200,100,200]);
   }
+
+}
+
+if(type==="recharge"){
+
+  box.classList.add("resultRecharge");
+
+  beep();
+
+  if(navigator.vibrate){
+    navigator.vibrate([300,100,300]);
+  }
+
+}
+
+if(type==="error"){
+
+  box.classList.add("resultError");
+
+  if(navigator.vibrate){
+    navigator.vibrate([100,100,100,100]);
+  }
+
+}
+
 
   document.getElementById(
     "clientName"
