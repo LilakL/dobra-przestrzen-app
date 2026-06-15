@@ -137,6 +137,34 @@ select{
 
 </div>
 
+
+<div class="card">
+
+<button
+class="primary"
+onclick="startScanner()">
+URUCHOM SKANER QR
+</button>
+
+<div id="reader"></div>
+
+</div>
+
+<div
+id="clientBox"
+class="card">
+
+<div
+id="clientName"
+class="big">
+</div>
+
+<div
+id="clientRemain">
+</div>
+
+</div>
+
 <div class="card modeCard">
 
 <button
@@ -172,44 +200,8 @@ onclick="setMode('recharge')">
 
 ➕ DOŁADUJ
 
-</button>
-<button
-id="executeBtn"
-class="primary"
-onclick="executeAction()">
-
-WYKONAJ OPERACJĘ
-
-</button>
-</div>
-
-<div class="card">
-
-<button
-class="primary"
-onclick="startScanner()">
-URUCHOM SKANER QR
-</button>
-
-<div id="reader"></div>
 
 </div>
-
-<div
-id="clientBox"
-class="card">
-
-<div
-id="clientName"
-class="big">
-</div>
-
-<div
-id="clientRemain">
-</div>
-
-</div>
-
 <script>
 
 const TOKEN =
