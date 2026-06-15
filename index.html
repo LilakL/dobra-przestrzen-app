@@ -228,7 +228,7 @@ function startScanner(){
 
 async function onScanSuccess(text){
 
-  alert("QR = " + text);
+
 
   const now = Date.now();
 
@@ -249,15 +249,7 @@ const clientId =
     .split("|")[0]
     .replace(/\s/g,"")
     .trim();
-alert("ID=" + clientId);
 
-alert(
-  API_URL +
-  "?action=preview&token=" +
-  TOKEN +
-  "&clientId=" +
-  clientId
-);
 
 const result =
   await api(
@@ -267,7 +259,7 @@ const result =
       clientId:clientId
     }
   );
-alert(JSON.stringify(result));
+
     if(!result.ok){
 
       alert(result.msg);
