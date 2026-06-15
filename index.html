@@ -214,12 +214,22 @@ async function api(action,data={}){
       ...data
     });
 
-  const response =
-    await fetch(
-      API_URL + "?" + params.toString()
-    );
+const url =
+  API_URL + "?" + params.toString();
 
-  return await response.json();
+alert(url);
+
+const response =
+  await fetch(url);
+
+alert(response.status);
+
+const txt =
+  await response.text();
+
+alert(txt);
+
+return JSON.parse(txt);
 
 }
 async function init(){
