@@ -246,7 +246,9 @@ async function onScanSuccess(text){
         "preview",
         {
           token:TOKEN,
-          clientId:String(text).trim()
+clientId:String(text)
+  .split("|")[0]
+  .trim()
         }
       );
 
