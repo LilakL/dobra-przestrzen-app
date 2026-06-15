@@ -226,12 +226,9 @@ function startScanner(){
 
 async function onScanSuccess(text){
 
-  alert(
-    JSON.stringify(text)
-  );
+  alert("QR = " + text);
 
-  const now =
-    Date.now();
+  const now = Date.now();
 
   if(
     text === lastScan &&
