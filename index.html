@@ -77,6 +77,7 @@ select{
 
 .activeMode{
   box-shadow:0 0 0 4px rgba(0,0,0,.15);
+  transform:scale(1.03);
 }
 
 .resultOk{
@@ -118,7 +119,7 @@ select{
 
 <div class="card">
 
-<h1>Dobra Przestrzeń V1000 TEST</h1>
+<h1>Dobra Przestrzeń</h1>
 
 <div id="operator">
 Ładowanie...
@@ -237,7 +238,13 @@ async function api(action,data={}){
   return JSON.parse(txt);
 }
 
-function showResult(type,title,name,balance){
+function showResult(
+  type,
+  title,
+  name,
+  balance,
+  before=""
+){
 
   const box =
     document.getElementById("clientBox");
@@ -256,25 +263,52 @@ function showResult(type,title,name,balance){
     box.classList.add("resultError");
   }
 
-  document.getElementById("clientName").innerHTML =
+  if(navigator.vibrate){
+    navigator.vibrate(150);
+  }
+
+  document.getElementById(
+    "clientName"
+  ).innerHTML =
     name || "";
 
-  document.getElementById("clientRemain").innerHTML =
-    title +
-    "<br><br>Aktualny stan: <b>" +
-    balance +
-    "</b>";
+  let html = title;
 
-  box.style.display = "block";
+  if(before !== ""){
+
+    html +=
+      "<br><br>Stan: <b>" +
+      before +
+      " → " +
+      balance +
+      "</b>";
+
+  }else{
+
+    html +=
+      "<br><br>Aktualny stan: <b>" +
+      balance +
+      "</b>";
+
+  }
+
+  document.getElementById(
+    "clientRemain"
+  ).innerHTML = html;
+
+  box.style.display =
+    "block";
 
   setTimeout(()=>{
 
-    box.style.display = "none";
+    box.style.display =
+      "none";
 
     lastScan = "";
     lastScanTime = 0;
 
   },3000);
+
 }
 
 async function init(){
@@ -371,8 +405,17 @@ function setMode(newMode){
 
   }
 
-}
+  document
+    .getElementById(
+      "rechargeAmount"
+    )
+    .style.display =
 
+    mode==="recharge"
+      ? "block"
+      : "none";
+
+}
 function startScanner(){
 
   if(scanner){
