@@ -198,7 +198,7 @@ const TOKEN =
 new URLSearchParams(
   window.location.search
 ).get("token") || "";
-alert("TOKEN=" + TOKEN);
+
 const API_URL =
 "https://script.google.com/macros/s/AKfycbw9xYY7qrNakOsqttH7nnV21MYAVCOkSw1MfAmN8RACMfWq1PvQgV8-7Z5fraPN10GoQQ/exec";
 
@@ -217,24 +217,24 @@ async function api(action,data={}){
 const url =
   API_URL + "?" + params.toString();
 
-alert(url);
+
 
 const response =
   await fetch(url);
 
-alert(response.status);
+
 
 const txt =
   await response.text();
 
-alert(txt);
+
 
 return JSON.parse(txt);
 
 }
 async function init(){
 
-  alert("INIT START");
+
 
   try{
 
@@ -246,7 +246,7 @@ const operator =
     }
   );
 
-alert(JSON.stringify(operator));
+
 
 document
       .getElementById(
@@ -260,7 +260,7 @@ document
 const schedule =
   await api("schedule");
 
-alert("Schedule loaded: " + schedule.length);
+
 
 const sel =
       document.getElementById(
@@ -356,8 +356,6 @@ function startScanner(){
 
 async function onScanSuccess(text){
 
-
-
   const now = Date.now();
 
   if(
@@ -372,84 +370,74 @@ async function onScanSuccess(text){
 
   try{
 
-const clientId =
-  String(text)
-    .split("|")[0]
-    .replace(/\s/g,"")
-    .trim();
+    const clientId =
+      String(text)
+        .split("|")[0]
+        .replace(/\s/g,"")
+        .trim();
 
+    const selected =
+      document
+        .getElementById("scheduleSelect")
+        .value
+        .split("|");
 
-const selected =
-  document
-    .getElementById("scheduleSelect")
-    .value
-    .split("|");
+    const day = selected[0];
+    const hour = selected[1];
+    const className = selected[2];
 
-const day =
-  selected[0];
+    let result;
 
-const hour =
-  selected[1];
+    if(mode === "checkin"){
 
-const className =
-  selected[2];
+      result =
+        await api(
+          "checkin",
+          {
+            token:TOKEN,
+            clientId:clientId,
+            day:day,
+            hour:hour,
+            className:className
+          }
+        );
 
-let result;
+    }else{
 
-if(mode === "checkin"){
+      const rechargeAmount =
+        Number(
+          document.getElementById(
+            "rechargeAmount"
+          ).value
+        );
 
-  result =
-    await api(
-      "checkin",
-      {
-        token:TOKEN,
-        clientId:clientId,
-        day:day,
-        hour:hour,
-        className:className
-      }
-    );
+      result =
+        await api(
+          "recharge",
+          {
+            token:TOKEN,
+            clientId:clientId,
+            amount:rechargeAmount
+          }
+        );
 
-}else{
-
-  const rechargeAmount =
-    Number(
-      document.getElementById(
-        "rechargeAmount"
-      ).value
-    );
-
-  result =
-    await api(
-      "recharge",
-      {
-        token:TOKEN,
-        clientId:clientId,
-        amount:rechargeAmount
-      }
-    );
-
-if(!result.ok){
-
-  alert(result.msg);
-  return;
-
-}
-
-const preview =
-  await api(
-    "preview",
-    {
-      token:TOKEN,
-      clientId:clientId
     }
-  );
-    "preview",
-    {
-      token:TOKEN,
-      clientId:clientId
+
+    if(!result.ok){
+
+      alert(result.msg);
+      return;
+
     }
-  );
+
+    const preview =
+      await api(
+        "preview",
+        {
+          token:TOKEN,
+          clientId:clientId
+        }
+      );
 
     document
       .getElementById(
@@ -465,39 +453,41 @@ const preview =
       .innerHTML =
       preview.name;
 
-const rechargeAmount =
-  document.getElementById(
-    "rechargeAmount"
-  ).value;
+    const rechargeAmount =
+      document.getElementById(
+        "rechargeAmount"
+      ).value;
 
-document
-  .getElementById(
-    "clientRemain"
-  )
-  .innerHTML =
+    document
+      .getElementById(
+        "clientRemain"
+      )
+      .innerHTML =
 
-(mode==="checkin"
- ? "✅ CHECK-IN OK"
- : "➕ DOŁADOWANIE +" +
-   rechargeAmount)
+      (mode==="checkin"
+        ? "✅ CHECK-IN OK"
+        : "➕ DOŁADOWANIE +" +
+          rechargeAmount)
 
-+
+      +
 
-"<br><br>Aktualny stan: <b>" +
+      "<br><br>Aktualny stan: <b>" +
 
-preview.remaining +
+      preview.remaining +
 
-"</b>";
-setTimeout(()=>{
+      "</b>";
 
-  document
-    .getElementById(
-      "clientBox"
-    )
-    .style.display =
-    "none";
+    setTimeout(()=>{
 
-},2000);
+      document
+        .getElementById(
+          "clientBox"
+        )
+        .style.display =
+        "none";
+
+    },2000);
+
   }
   catch(err){
 
