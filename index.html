@@ -224,17 +224,21 @@ async function api(action,data={}){
 }
 async function init(){
 
+  alert("INIT START");
+
   try{
 
-    const operator =
-      await api(
-        "operator",
-        {
-          token:TOKEN
-        }
-      );
+const operator =
+  await api(
+    "operator",
+    {
+      token:TOKEN
+    }
+  );
 
-    document
+alert(JSON.stringify(operator));
+
+document
       .getElementById(
         "operator"
       )
@@ -243,10 +247,12 @@ async function init(){
       operator.name +
       "</b>";
 
-    const schedule =
-      await api("schedule");
+const schedule =
+  await api("schedule");
 
-    const sel =
+alert("Schedule loaded: " + schedule.length);
+
+const sel =
       document.getElementById(
         "scheduleSelect"
       );
@@ -413,7 +419,8 @@ if(mode === "checkin"){
       }
     );
 
-}
+if(!result.ok){
+
   alert(result.msg);
   return;
 
@@ -421,6 +428,12 @@ if(mode === "checkin"){
 
 const preview =
   await api(
+    "preview",
+    {
+      token:TOKEN,
+      clientId:clientId
+    }
+  );
     "preview",
     {
       token:TOKEN,
