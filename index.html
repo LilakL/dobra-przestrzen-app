@@ -120,25 +120,20 @@ let lastScanTime = 0;
 
 async function api(action,data={}){
 
+  const params =
+    new URLSearchParams({
+      action,
+      ...data
+    });
+
   const response =
     await fetch(
-      API_URL,
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          action,
-          ...data
-        })
-      }
+      API_URL + "?" + params.toString()
     );
 
   return await response.json();
 
 }
-
 async function init(){
 
   try{
