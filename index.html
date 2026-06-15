@@ -109,7 +109,9 @@ id="clientRemain">
 <script>
 
 const TOKEN =
-"tokenKonrad";
+new URLSearchParams(
+  window.location.search
+).get("token") || "";
 
 const API_URL =
 "https://script.google.com/macros/s/AKfycbw9xYY7qrNakOsqttH7nnV21MYAVCOkSw1MfAmN8RACMfWq1PvQgV8-7Z5fraPN10GoQQ/exec";
