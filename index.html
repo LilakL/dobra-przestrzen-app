@@ -251,7 +251,41 @@ const clientId =
     .trim();
 
 
+const selected =
+  document
+    .getElementById("scheduleSelect")
+    .value
+    .split("|");
+
+const day =
+  selected[0];
+
+const hour =
+  selected[1];
+
+const className =
+  selected[2];
+
 const result =
+  await api(
+    "checkin",
+    {
+      token:TOKEN,
+      clientId:clientId,
+      day:day,
+      hour:hour,
+      className:className
+    }
+  );
+
+if(!result.ok){
+
+  alert(result.msg);
+  return;
+
+}
+
+const preview =
   await api(
     "preview",
     {
@@ -259,13 +293,6 @@ const result =
       clientId:clientId
     }
   );
-
-    if(!result.ok){
-
-      alert(result.msg);
-      return;
-
-    }
 
     document
       .getElementById(
@@ -279,16 +306,16 @@ const result =
         "clientName"
       )
       .innerHTML =
-      result.name;
+      preview.name;
 
     document
       .getElementById(
         "clientRemain"
       )
       .innerHTML =
-      "Pozostało wejść: <b>" +
-      result.remaining +
-      "</b>";
+"CHECK-IN OK<br><br>Pozostało wejść: <b>" +
+preview.remaining +
+"</b>";
 
   }
   catch(err){
