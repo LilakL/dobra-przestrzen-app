@@ -247,9 +247,17 @@ async function onScanSuccess(text){
 const clientId =
   String(text)
     .split("|")[0]
+    .replace(/\s/g,"")
     .trim();
-
 alert("ID=" + clientId);
+
+alert(
+  API_URL +
+  "?action=preview&token=" +
+  TOKEN +
+  "&clientId=" +
+  clientId
+);
 
 const result =
   await api(
