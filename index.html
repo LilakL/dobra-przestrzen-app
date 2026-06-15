@@ -1,6 +1,306 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Dobra Przestrzeń</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  margin:0;
+  padding:15px;
+}
+
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+h1{
+  margin:0;
+}
+
+button,
+select{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  margin-top:8px;
+  border-radius:10px;
+}
+
+.primary{
+  background:#0f766e;
+  color:#fff;
+  border:none;
+}
+
+.big{
+  font-size:24px;
+  font-weight:bold;
+}
+
+#clientBox{
+  display:none;
+}
+
+</style>
+
+</head>
+
 <body>
-<h1>KONRAD TEST 123</h1>
+
+<div class="card">
+
+<h1>Dobra Przestrzeń</h1>
+
+<div id="operator">
+Ładowanie...
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Zajęcia</h3>
+
+<select id="scheduleSelect">
+<option>Ładowanie...</option>
+</select>
+
+</div>
+
+<div class="card">
+
+<button
+class="primary"
+onclick="startScanner()">
+URUCHOM SKANER QR
+</button>
+
+<div id="reader"></div>
+
+</div>
+
+<div
+id="clientBox"
+class="card">
+
+<div
+id="clientName"
+class="big">
+</div>
+
+<div
+id="clientRemain">
+</div>
+
+</div>
+
+<script>
+
+const TOKEN =
+"tokenKonrad";
+
+const API_URL =
+"https://script.google.com/macros/s/AKfycbw9xYY7qrNakOsqttH7nnV21MYAVCOkSw1MfAmN8RACMfWq1PvQgV8-7Z5fraPN10GoQQ/exec";
+
+let scanner = null;
+let lastScan = "";
+let lastScanTime = 0;
+
+async function api(action,data={}){
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          action,
+          ...data
+        })
+      }
+    );
+
+  return await response.json();
+
+}
+
+async function init(){
+
+  try{
+
+    const operator =
+      await api(
+        "operator",
+        {
+          token:TOKEN
+        }
+      );
+
+    document
+      .getElementById(
+        "operator"
+      )
+      .innerHTML =
+      "Operator: <b>" +
+      operator.name +
+      "</b>";
+
+    const schedule =
+      await api("schedule");
+
+    const sel =
+      document.getElementById(
+        "scheduleSelect"
+      );
+
+    sel.innerHTML = "";
+
+    schedule.forEach(x=>{
+
+      const o =
+        document.createElement(
+          "option"
+        );
+
+      o.value =
+        x.day +
+        "|" +
+        x.hour +
+        "|" +
+        x.className;
+
+      o.textContent =
+        x.day +
+        " | " +
+        x.hour +
+        " | " +
+        x.className;
+
+      sel.appendChild(o);
+
+    });
+
+  }
+  catch(err){
+
+    alert(
+      "Błąd inicjalizacji:\n" +
+      err.message
+    );
+
+  }
+
+}
+
+function startScanner(){
+
+  if(scanner){
+    return;
+  }
+
+  scanner =
+    new Html5QrcodeScanner(
+      "reader",
+      {
+        fps:10,
+        qrbox:250
+      }
+    );
+
+  scanner.render(
+    onScanSuccess,
+    ()=>{}
+  );
+
+}
+
+async function onScanSuccess(text){
+
+  const now =
+    Date.now();
+
+  if(
+    text === lastScan &&
+    (now-lastScanTime) < 5000
+  ){
+    return;
+  }
+
+  lastScan = text;
+  lastScanTime = now;
+
+  try{
+
+    const result =
+      await api(
+        "preview",
+        {
+          token:TOKEN,
+          clientId:String(text).trim()
+        }
+      );
+
+    if(!result.ok){
+
+      alert(result.msg);
+      return;
+
+    }
+
+    document
+      .getElementById(
+        "clientBox"
+      )
+      .style.display =
+      "block";
+
+    document
+      .getElementById(
+        "clientName"
+      )
+      .innerHTML =
+      result.name;
+
+    document
+      .getElementById(
+        "clientRemain"
+      )
+      .innerHTML =
+      "Pozostało wejść: <b>" +
+      result.remaining +
+      "</b>";
+
+  }
+  catch(err){
+
+    alert(
+      "Błąd skanowania:\n" +
+      err.message
+    );
+
+  }
+
+}
+
+window.onload =
+  init;
+
+</script>
+
 </body>
 </html>
