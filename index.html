@@ -52,7 +52,56 @@ select{
 #clientBox{
   display:none;
 }
+.modeCard{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
 
+.checkinBtn{
+  background:#16a34a;
+  color:white;
+  border:none;
+  font-weight:bold;
+  font-size:22px;
+}
+
+.rechargeBtn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  font-weight:bold;
+  font-size:22px;
+}
+
+.activeMode{
+  box-shadow:0 0 0 4px rgba(0,0,0,.15);
+}
+
+.resultOk{
+  background:#dcfce7;
+  border-left:6px solid #16a34a;
+  padding:15px;
+  border-radius:10px;
+}
+
+.resultRecharge{
+  background:#dbeafe;
+  border-left:6px solid #2563eb;
+  padding:15px;
+  border-radius:10px;
+}
+
+.resultName{
+  font-size:28px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.resultValue{
+  font-size:36px;
+  font-weight:bold;
+}
 </style>
 
 </head>
@@ -78,7 +127,44 @@ select{
 </select>
 
 </div>
+<div class="card modeCard">
 
+<button
+id="checkinBtn"
+class="checkinBtn activeMode"
+onclick="setMode('checkin')">
+
+✅ CHECK-IN
+
+</button>
+
+<select id="rechargeAmount">
+
+<option value="1">+1</option>
+<option value="2">+2</option>
+<option value="3">+3</option>
+<option value="4">+4</option>
+<option value="5">+5</option>
+<option value="6">+6</option>
+<option value="7">+7</option>
+<option value="8">+8</option>
+<option value="9">+9</option>
+<option value="10">+10</option>
+<option value="15">+15</option>
+<option value="20">+20</option>
+
+</select>
+
+<button
+id="rechargeBtn"
+class="rechargeBtn"
+onclick="setMode('recharge')">
+
+➕ DOŁADUJ
+
+</button>
+
+</div>
 <div class="card">
 
 <button
@@ -119,7 +205,7 @@ const API_URL =
 let scanner = null;
 let lastScan = "";
 let lastScanTime = 0;
-
+let mode = "checkin";
 async function api(action,data={}){
 
   const params =
@@ -203,7 +289,33 @@ async function init(){
   }
 
 }
+function setMode(newMode){
 
+  mode = newMode;
+
+  document
+    .getElementById("checkinBtn")
+    .classList.remove("activeMode");
+
+  document
+    .getElementById("rechargeBtn")
+    .classList.remove("activeMode");
+
+  if(mode==="checkin"){
+
+    document
+      .getElementById("checkinBtn")
+      .classList.add("activeMode");
+
+  }else{
+
+    document
+      .getElementById("rechargeBtn")
+      .classList.add("activeMode");
+
+  }
+
+}
 function startScanner(){
 
   if(scanner){
@@ -266,20 +378,42 @@ const hour =
 const className =
   selected[2];
 
-const result =
-  await api(
-    "checkin",
-    {
-      token:TOKEN,
-      clientId:clientId,
-      day:day,
-      hour:hour,
-      className:className
-    }
-  );
+let result;
 
-if(!result.ok){
+if(mode === "checkin"){
 
+  result =
+    await api(
+      "checkin",
+      {
+        token:TOKEN,
+        clientId:clientId,
+        day:day,
+        hour:hour,
+        className:className
+      }
+    );
+
+}else{
+
+  const rechargeAmount =
+    Number(
+      document.getElementById(
+        "rechargeAmount"
+      ).value
+    );
+
+  result =
+    await api(
+      "recharge",
+      {
+        token:TOKEN,
+        clientId:clientId,
+        amount:rechargeAmount
+      }
+    );
+
+}
   alert(result.msg);
   return;
 
@@ -308,15 +442,39 @@ const preview =
       .innerHTML =
       preview.name;
 
-    document
-      .getElementById(
-        "clientRemain"
-      )
-      .innerHTML =
-"CHECK-IN OK<br><br>Pozostało wejść: <b>" +
-preview.remaining +
-"</b>";
+const rechargeAmount =
+  document.getElementById(
+    "rechargeAmount"
+  ).value;
 
+document
+  .getElementById(
+    "clientRemain"
+  )
+  .innerHTML =
+
+(mode==="checkin"
+ ? "✅ CHECK-IN OK"
+ : "➕ DOŁADOWANIE +" +
+   rechargeAmount)
+
++
+
+"<br><br>Aktualny stan: <b>" +
+
+preview.remaining +
+
+"</b>";
+setTimeout(()=>{
+
+  document
+    .getElementById(
+      "clientBox"
+    )
+    .style.display =
+    "none";
+
+},2000);
   }
   catch(err){
 
