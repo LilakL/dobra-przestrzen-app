@@ -244,16 +244,21 @@ async function onScanSuccess(text){
 
   try{
 
-    const result =
-      await api(
-        "preview",
-        {
-          token:TOKEN,
-clientId:String(text)
-  .split("|")[0]
-  .trim()
-        }
-      );
+const clientId =
+  String(text)
+    .split("|")[0]
+    .trim();
+
+alert("ID=" + clientId);
+
+const result =
+  await api(
+    "preview",
+    {
+      token:TOKEN,
+      clientId:clientId
+    }
+  );
 
     if(!result.ok){
 
