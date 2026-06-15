@@ -170,7 +170,7 @@ id="clientRemain">
 <button
 id="checkinBtn"
 class="checkinBtn activeMode"
-onclick="setMode('checkin')">
+onclick="executeCheckin()">
 
 ✅ CHECK-IN
 
@@ -196,10 +196,11 @@ onclick="setMode('checkin')">
 <button
 id="rechargeBtn"
 class="rechargeBtn"
-onclick="setMode('recharge')">
+onclick="executeRecharge()">
 
 ➕ DOŁADUJ
 
+</button>
 
 </div>
 <script>
@@ -538,145 +539,135 @@ async function onScanSuccess(text){
   }
 
 }
-async function executeAction(){
+async function executeCheckin(){
 
-if(!currentClientId){
+  if(!currentClientId){
 
-```
-showResult(
-  "error",
-  "Najpierw zeskanuj klienta",
-  "",
-  "-"
-);
+    showResult(
+      "error",
+      "Najpierw zeskanuj klienta",
+      "",
+      "-"
+    );
 
-return;
-```
+    return;
+  }
 
-}
+  const selected =
+    document
+      .getElementById("scheduleSelect")
+      .value
+      .split("|");
 
-const selected =
-document
-.getElementById(
-"scheduleSelect"
-)
-.value
-.split("|");
+  const result =
+    await api(
+      "checkin",
+      {
+        token:TOKEN,
+        clientId:currentClientId,
+        day:selected[0],
+        hour:selected[1],
+        className:selected[2]
+      }
+    );
 
-const day =
-selected[0];
+  if(!result.ok){
 
-const hour =
-selected[1];
+    showResult(
+      "error",
+      result.msg,
+      "",
+      "-"
+    );
 
-const className =
-selected[2];
+    return;
+  }
 
-let result;
+  const preview =
+    await api(
+      "preview",
+      {
+        token:TOKEN,
+        clientId:currentClientId
+      }
+    );
 
-if(mode==="checkin"){
-
-```
-result =
-  await api(
+  showResult(
     "checkin",
-    {
-      token:TOKEN,
-      clientId:currentClientId,
-      day:day,
-      hour:hour,
-      className:className
-    }
+    "✅ CHECK-IN OK",
+    preview.id + "<br>" + preview.name,
+    preview.remaining,
+    result.before
   );
-```
 
-}else{
+  currentClientId = "";
+  currentClient = null;
+}
 
-```
-const rechargeAmount =
-  document
-    .getElementById(
-      "rechargeAmount"
-    )
-    .value;
+async function executeRecharge(){
 
-result =
-  await api(
+  if(!currentClientId){
+
+    showResult(
+      "error",
+      "Najpierw zeskanuj klienta",
+      "",
+      "-"
+    );
+
+    return;
+  }
+
+  const amount =
+    document
+      .getElementById(
+        "rechargeAmount"
+      )
+      .value;
+
+  const result =
+    await api(
+      "recharge",
+      {
+        token:TOKEN,
+        clientId:currentClientId,
+        amount:amount
+      }
+    );
+
+  if(!result.ok){
+
+    showResult(
+      "error",
+      result.msg,
+      "",
+      "-"
+    );
+
+    return;
+  }
+
+  const preview =
+    await api(
+      "preview",
+      {
+        token:TOKEN,
+        clientId:currentClientId
+      }
+    );
+
+  showResult(
     "recharge",
-    {
-      token:TOKEN,
-      clientId:currentClientId,
-      amount:rechargeAmount
-    }
+    "➕ DOŁADOWANO +" + amount,
+    preview.id + "<br>" + preview.name,
+    preview.remaining,
+    result.before
   );
-```
 
+  currentClientId = "";
+  currentClient = null;
 }
 
-if(!result.ok){
-
-```
-showResult(
-  "error",
-  "❌ " + result.msg,
-  "",
-  "-"
-);
-
-return;
-```
-
-}
-
-const preview =
-await api(
-"preview",
-{
-token:TOKEN,
-clientId:currentClientId
-}
-);
-
-if(mode==="checkin"){
-
-```
-showResult(
-  "checkin",
-  "✅ CHECK-IN OK",
-  preview.id + "<br>" +
-  preview.name,
-  preview.remaining,
-  result.before
-);
-```
-
-}else{
-
-```
-const rechargeAmount =
-  document
-    .getElementById(
-      "rechargeAmount"
-    )
-    .value;
-
-showResult(
-  "recharge",
-  "➕ DOŁADOWANO +" +
-  rechargeAmount,
-  preview.id + "<br>" +
-  preview.name,
-  preview.remaining,
-  result.before
-);
-```
-
-}
-
-currentClientId = "";
-currentClient = null;
-
-}
 
 window.onload = init;
 
