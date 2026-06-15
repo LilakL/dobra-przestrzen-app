@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -52,6 +53,7 @@ select{
 #clientBox{
   display:none;
 }
+
 .modeCard{
   display:flex;
   flex-direction:column;
@@ -92,6 +94,13 @@ select{
   border-radius:10px;
 }
 
+.resultError{
+  background:#fee2e2;
+  border-left:6px solid #dc2626;
+  padding:15px;
+  border-radius:10px;
+}
+
 .resultName{
   font-size:28px;
   font-weight:bold;
@@ -102,8 +111,8 @@ select{
   font-size:36px;
   font-weight:bold;
 }
-</style>
 
+</style>
 </head>
 
 <body>
@@ -127,6 +136,7 @@ select{
 </select>
 
 </div>
+
 <div class="card modeCard">
 
 <button
@@ -165,6 +175,7 @@ onclick="setMode('recharge')">
 </button>
 
 </div>
+
 <div class="card">
 
 <button
@@ -206,6 +217,7 @@ let scanner = null;
 let lastScan = "";
 let lastScanTime = 0;
 let mode = "checkin";
+
 async function api(action,data={}){
 
   const params =
@@ -214,55 +226,81 @@ async function api(action,data={}){
       ...data
     });
 
-const url =
-  API_URL + "?" + params.toString();
+  const url =
+    API_URL + "?" + params.toString();
 
+  const response =
+    await fetch(url);
 
+  const txt =
+    await response.text();
 
-const response =
-  await fetch(url);
-
-
-
-const txt =
-  await response.text();
-
-
-
-return JSON.parse(txt);
-
+  return JSON.parse(txt);
 }
+
+function showResult(type,title,name,balance){
+
+  const box =
+    document.getElementById("clientBox");
+
+  box.className = "card";
+
+  if(type==="checkin"){
+    box.classList.add("resultOk");
+  }
+
+  if(type==="recharge"){
+    box.classList.add("resultRecharge");
+  }
+
+  if(type==="error"){
+    box.classList.add("resultError");
+  }
+
+  document.getElementById("clientName").innerHTML =
+    name || "";
+
+  document.getElementById("clientRemain").innerHTML =
+    title +
+    "<br><br>Aktualny stan: <b>" +
+    balance +
+    "</b>";
+
+  box.style.display = "block";
+
+  setTimeout(()=>{
+
+    box.style.display = "none";
+
+    lastScan = "";
+    lastScanTime = 0;
+
+  },3000);
+}
+
 async function init(){
-
-
 
   try{
 
-const operator =
-  await api(
-    "operator",
-    {
-      token:TOKEN
-    }
-  );
+    const operator =
+      await api(
+        "operator",
+        {
+          token:TOKEN
+        }
+      );
 
-
-
-document
-      .getElementById(
-        "operator"
-      )
+    document
+      .getElementById("operator")
       .innerHTML =
       "Operator: <b>" +
       operator.name +
       "</b>";
 
-const schedule =
-  await api("schedule");
+    const schedule =
+      await api("schedule");
 
-
-
-const sel =
+    const sel =
       document.getElementById(
         "scheduleSelect"
       );
@@ -297,14 +335,17 @@ const sel =
   }
   catch(err){
 
-    alert(
-      "Błąd inicjalizacji:\n" +
+    showResult(
+      "error",
+      "❌ Błąd inicjalizacji",
+      "",
       err.message
     );
 
   }
 
 }
+
 function setMode(newMode){
 
   mode = newMode;
@@ -332,6 +373,7 @@ function setMode(newMode){
   }
 
 }
+
 function startScanner(){
 
   if(scanner){
@@ -425,7 +467,13 @@ async function onScanSuccess(text){
 
     if(!result.ok){
 
-      alert(result.msg);
+      showResult(
+        "error",
+        "❌ " + (result.msg || "Błąd"),
+        "",
+        "-"
+      );
+
       return;
 
     }
@@ -439,60 +487,38 @@ async function onScanSuccess(text){
         }
       );
 
-    document
-      .getElementById(
-        "clientBox"
-      )
-      .style.display =
-      "block";
-
-    document
-      .getElementById(
-        "clientName"
-      )
-      .innerHTML =
-      preview.name;
-
     const rechargeAmount =
       document.getElementById(
         "rechargeAmount"
       ).value;
 
-    document
-      .getElementById(
-        "clientRemain"
-      )
-      .innerHTML =
+    if(mode==="checkin"){
 
-      (mode==="checkin"
-        ? "✅ CHECK-IN OK"
-        : "➕ DOŁADOWANIE +" +
-          rechargeAmount)
+      showResult(
+        "checkin",
+        "✅ CHECK-IN OK",
+        preview.name,
+        preview.remaining
+      );
 
-      +
+    }else{
 
-      "<br><br>Aktualny stan: <b>" +
+      showResult(
+        "recharge",
+        "➕ DOŁADOWANO +" + rechargeAmount,
+        preview.name,
+        preview.remaining
+      );
 
-      preview.remaining +
-
-      "</b>";
-
-    setTimeout(()=>{
-
-      document
-        .getElementById(
-          "clientBox"
-        )
-        .style.display =
-        "none";
-
-    },2000);
+    }
 
   }
   catch(err){
 
-    alert(
-      "Błąd skanowania:\n" +
+    showResult(
+      "error",
+      "❌ Błąd skanowania",
+      "",
       err.message
     );
 
@@ -500,10 +526,10 @@ async function onScanSuccess(text){
 
 }
 
-window.onload =
-  init;
+window.onload = init;
 
 </script>
 
 </body>
 </html>
+```
