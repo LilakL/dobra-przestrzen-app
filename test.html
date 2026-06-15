@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button onclick="test()">
+TEST API
+</button>
+
+<script>
+
+async function test(){
+
+  try{
+
+    const r =
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbw9xYY7qrNakOsqttH7nnV21MYAVCOkSw1MfAmN8RACMfWq1PvQgV8-7Z5fraPN10GoQQ/exec?action=operator&token=tokenKonrad"
+      );
+
+    const t =
+      await r.text();
+
+    alert(t);
+
+  }
+  catch(err){
+
+    alert(err);
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
