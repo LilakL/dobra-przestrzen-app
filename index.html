@@ -173,7 +173,14 @@ onclick="setMode('recharge')">
 ➕ DOŁADUJ
 
 </button>
+<button
+id="executeBtn"
+class="primary"
+onclick="executeAction()">
 
+WYKONAJ OPERACJĘ
+
+</button>
 </div>
 
 <div class="card">
@@ -217,7 +224,9 @@ let scanner = null;
 let lastScan = "";
 let lastScanTime = 0;
 let mode = "checkin";
-
+let currentClientId = "";
+let currentClient = null;
+  
 async function api(action,data={}){
 
   const params =
@@ -460,66 +469,6 @@ async function onScanSuccess(text){
         .replace(/\s/g,"")
         .trim();
 
-    const selected =
-      document
-        .getElementById("scheduleSelect")
-        .value
-        .split("|");
-
-    const day = selected[0];
-    const hour = selected[1];
-    const className = selected[2];
-
-    let result;
-
-    if(mode === "checkin"){
-
-      result =
-        await api(
-          "checkin",
-          {
-            token:TOKEN,
-            clientId:clientId,
-            day:day,
-            hour:hour,
-            className:className
-          }
-        );
-
-    }else{
-
-      const rechargeAmount =
-        Number(
-          document.getElementById(
-            "rechargeAmount"
-          ).value
-        );
-
-      result =
-        await api(
-          "recharge",
-          {
-            token:TOKEN,
-            clientId:clientId,
-            amount:rechargeAmount
-          }
-        );
-
-    }
-
-    if(!result.ok){
-
-      showResult(
-        "error",
-        "❌ " + (result.msg || "Błąd"),
-        "",
-        "-"
-      );
-
-      return;
-
-    }
-
     const preview =
       await api(
         "preview",
@@ -529,32 +478,60 @@ async function onScanSuccess(text){
         }
       );
 
-    const rechargeAmount =
-      document.getElementById(
-        "rechargeAmount"
-      ).value;
-
-    if(mode==="checkin"){
+    if(!preview.ok){
 
       showResult(
-        "checkin",
-        "✅ CHECK-IN OK",
-        preview.name,
-        preview.remaining
+        "error",
+        preview.msg,
+        "",
+        "-"
       );
 
-    }else{
-
-showResult(
-  "recharge",
-  "➕ DOŁADOWANO " +
-  rechargeAmount +
-  " wejść",
-  preview.name,
-  preview.remaining
-);
+      return;
 
     }
+
+    currentClientId =
+      clientId;
+
+    currentClient =
+      preview;
+
+    document
+      .getElementById(
+        "clientBox"
+      )
+      .className =
+      "card";
+
+    document
+      .getElementById(
+        "clientBox"
+      )
+      .style.display =
+      "block";
+
+    document
+      .getElementById(
+        "clientName"
+      )
+      .innerHTML =
+
+      preview.id +
+      "<br>" +
+      preview.name;
+
+    document
+      .getElementById(
+        "clientRemain"
+      )
+      .innerHTML =
+
+      "Aktualny stan: <b>" +
+      preview.remaining +
+      "</b><br><br>" +
+
+      "Wybierz operację:";
 
   }
   catch(err){
@@ -567,6 +544,145 @@ showResult(
     );
 
   }
+
+}
+async function executeAction(){
+
+if(!currentClientId){
+
+```
+showResult(
+  "error",
+  "Najpierw zeskanuj klienta",
+  "",
+  "-"
+);
+
+return;
+```
+
+}
+
+const selected =
+document
+.getElementById(
+"scheduleSelect"
+)
+.value
+.split("|");
+
+const day =
+selected[0];
+
+const hour =
+selected[1];
+
+const className =
+selected[2];
+
+let result;
+
+if(mode==="checkin"){
+
+```
+result =
+  await api(
+    "checkin",
+    {
+      token:TOKEN,
+      clientId:currentClientId,
+      day:day,
+      hour:hour,
+      className:className
+    }
+  );
+```
+
+}else{
+
+```
+const rechargeAmount =
+  document
+    .getElementById(
+      "rechargeAmount"
+    )
+    .value;
+
+result =
+  await api(
+    "recharge",
+    {
+      token:TOKEN,
+      clientId:currentClientId,
+      amount:rechargeAmount
+    }
+  );
+```
+
+}
+
+if(!result.ok){
+
+```
+showResult(
+  "error",
+  "❌ " + result.msg,
+  "",
+  "-"
+);
+
+return;
+```
+
+}
+
+const preview =
+await api(
+"preview",
+{
+token:TOKEN,
+clientId:currentClientId
+}
+);
+
+if(mode==="checkin"){
+
+```
+showResult(
+  "checkin",
+  "✅ CHECK-IN OK",
+  preview.id + "<br>" +
+  preview.name,
+  preview.remaining,
+  result.before
+);
+```
+
+}else{
+
+```
+const rechargeAmount =
+  document
+    .getElementById(
+      "rechargeAmount"
+    )
+    .value;
+
+showResult(
+  "recharge",
+  "➕ DOŁADOWANO +" +
+  rechargeAmount,
+  preview.id + "<br>" +
+  preview.name,
+  preview.remaining,
+  result.before
+);
+```
+
+}
+
+currentClientId = "";
+currentClient = null;
 
 }
 
