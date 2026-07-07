@@ -74,7 +74,22 @@ select{
   font-weight:bold;
   font-size:22px;
 }
+.addClientBtn{
+  background:#7c3aed;
+  color:white;
+  border:none;
+  font-weight:bold;
+  font-size:22px;
+  transition:.25s;
+}
 
+.addClientBtn:hover{
+  transform:scale(1.03);
+}
+
+.addClientBtn:active{
+  transform:scale(.97);
+}
 .activeMode{
   box-shadow:0 0 0 4px rgba(0,0,0,.15);
   transform:scale(1.03);
@@ -198,7 +213,16 @@ id="rechargeBtn"
 class="rechargeBtn"
 onclick="executeRecharge()">
 
-➕ DOŁADUJ
+💳 DOŁADUJ
+
+</button>
+
+<button
+id="addClientBtn"
+class="addClientBtn"
+onclick="showAddClient()">
+
+👤 NOWY UCZESTNIK
 
 </button>
 
@@ -709,7 +733,13 @@ async function executeRecharge(){
   currentClient = null;
 }
 
+function showAddClient(){
 
+    beep();
+
+    alert("Moduł dodawania uczestnika będzie w następnym kroku.");
+
+}
 window.onload = init;
 
 </script>
