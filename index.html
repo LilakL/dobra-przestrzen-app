@@ -126,7 +126,52 @@ select{
   font-size:36px;
   font-weight:bold;
 }
+/* ===== NOWY UCZESTNIK ===== */
 
+#addClientPanel{
+  display:none;
+  background:#fff;
+  border-radius:14px;
+  padding:18px;
+  margin-top:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+#addClientPanel h3{
+  margin-top:0;
+}
+
+#addClientPanel input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:17px;
+  box-sizing:border-box;
+}
+
+.formButtons{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+
+.saveBtn{
+  flex:1;
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  font-weight:bold;
+}
+
+.cancelBtn{
+  flex:1;
+  background:#dc2626;
+  color:#fff;
+  border:none;
+  font-weight:bold;
+}
 </style>
 </head>
 
@@ -225,6 +270,49 @@ onclick="showAddClient()">
 👤 NOWY UCZESTNIK
 
 </button>
+
+</div>
+  <div
+id="addClientPanel"
+class="card">
+
+<h3>👤 Nowy uczestnik</h3>
+
+<input
+id="newName"
+placeholder="Imię *">
+
+<input
+id="newSurname"
+placeholder="Nazwisko *">
+
+<input
+id="newPhone"
+placeholder="Telefon (opcjonalnie)">
+
+<input
+id="newEmail"
+placeholder="Email (opcjonalnie)">
+
+<div class="formButtons">
+
+<button
+class="saveBtn"
+onclick="saveNewClient()">
+
+💾 ZAPISZ
+
+</button>
+
+<button
+class="cancelBtn"
+onclick="closeAddClient()">
+
+ANULUJ
+
+</button>
+
+</div>
 
 </div>
 <script>
@@ -737,9 +825,60 @@ function showAddClient(){
 
     beep();
 
-    alert("Moduł dodawania uczestnika będzie w następnym kroku.");
+    document
+      .getElementById("addClientPanel")
+      .style.display="block";
+
+    document
+      .getElementById("newName")
+      .focus();
 
 }
+
+function closeAddClient(){
+
+    document
+      .getElementById("addClientPanel")
+      .style.display="none";
+
+}
+
+function saveNewClient(){
+
+    const name =
+      document
+      .getElementById("newName")
+      .value
+      .trim();
+
+    const surname =
+      document
+      .getElementById("newSurname")
+      .value
+      .trim();
+
+    if(name===""){
+
+        alert("Podaj imię.");
+
+        return;
+
+    }
+
+    if(surname===""){
+
+        alert("Podaj nazwisko.");
+
+        return;
+
+    }
+
+    alert(
+      "Formularz działa.\n\nW następnym kroku podłączymy zapis do Google Sheets."
+    );
+
+}
+
 window.onload = init;
 
 </script>
