@@ -868,95 +868,99 @@ function closeAddClient(){
       .style.display="none";
 
 }
-
 async function saveNewClient(){
 
-  const firstName=document.getElementById("newName").value.trim();
-  const lastName=document.getElementById("newSurname").value.trim();
-  const phone=document.getElementById("newPhone").value.trim();
-  const email=document.getElementById("newEmail").value.trim();
+  try{
 
-  if(firstName===""){
-    alert("Podaj imię.");
-    return;
-  }
+    const firstName=document.getElementById("newName").value.trim();
+    const lastName=document.getElementById("newSurname").value.trim();
+    const phone=document.getElementById("newPhone").value.trim();
+    const email=document.getElementById("newEmail").value.trim();
 
-  if(lastName===""){
-    alert("Podaj nazwisko.");
-    return;
-  }
-
-  const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if(email!=="" && !emailRegex.test(email)){
-    alert("Niepoprawny adres e-mail.");
-    return;
-  }
-
-  const result=await apiPost(
-    "addClient",
-    {
-      token:TOKEN,
-      firstName:firstName,
-      lastName:lastName,
-      phone:phone,
-      email:email,
-      forceCreate:false
+    if(firstName===""){
+      alert("Podaj imię.");
+      return;
     }
-  );
 
-  if(result.duplicate){
+    if(lastName===""){
+      alert("Podaj nazwisko.");
+      return;
+    }
 
-      if(confirm(
+    const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if(email!=="" && !emailRegex.test(email)){
+      alert("Niepoprawny adres e-mail.");
+      return;
+    }
+
+    let result=await apiPost(
+      "addClient",
+      {
+        token:TOKEN,
+        firstName,
+        lastName,
+        phone,
+        email,
+        forceCreate:false
+      }
+    );
+
+    if(result.duplicate){
+
+      const force=confirm(
         "Uczestnik już istnieje:\n\n"+
         result.name+
         "\n"+
         result.id+
         "\n\nDodać mimo to?"
-      )){
+      );
 
-          const forceResult=
-            await apiPost(
-              "addClient",
-              {
-                token:TOKEN,
-                firstName:firstName,
-                lastName:lastName,
-                phone:phone,
-                email:email,
-                forceCreate:true
-              }
-            );
-
-          if(forceResult.ok){
-
-              alert(
-                "Dodano uczestnika.\nID: "+
-                forceResult.id
-              );
-
-          }
-
+      if(!force){
+        return;
       }
 
-      return;
+      result=await apiPost(
+        "addClient",
+        {
+          token:TOKEN,
+          firstName,
+          lastName,
+          phone,
+          email,
+          forceCreate:true
+        }
+      );
 
-  }
+    }
 
-  if(!result.ok){
-
+    if(!result.ok){
       alert(result.msg);
-
       return;
+    }
+
+    alert(
+      "✅ Dodano uczestnika\n\nID: "+result.id
+    );
+
+    document.getElementById("newName").value="";
+    document.getElementById("newSurname").value="";
+    document.getElementById("newPhone").value="";
+    document.getElementById("newEmail").value="";
+
+    closeAddClient();
 
   }
+  catch(err){
 
-  alert(
-    "Dodano uczestnika.\nID: "+
-    result.id
-  );
+    console.error(err);
 
-  closeAddClient();
+    alert(
+      "Błąd połączenia z serwerem.\n\n"+
+      err.message
+    );
+
+  }
 
 }
 
