@@ -373,7 +373,33 @@ async function api(action,data={}){
 
   return JSON.parse(txt);
 }
+async function apiPost(action,data={}){
 
+  const response =
+    await fetch(API_URL,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        action,
+
+        ...data
+
+      })
+
+    });
+
+  const txt =
+    await response.text();
+
+  return JSON.parse(txt);
+
+}
 function showResult(
   type,
   title,
