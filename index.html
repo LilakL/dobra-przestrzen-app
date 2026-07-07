@@ -293,7 +293,6 @@ placeholder="Telefon (opcjonalnie)">
 <input
 id="newEmail"
 placeholder="Email (opcjonalnie)">
-<input
 
 <label
 style="
@@ -334,7 +333,6 @@ font-weight:bold;
 
 </select>
 
-<div class="formButtons">
 <div class="formButtons">
 
 <button
@@ -917,7 +915,8 @@ async function saveNewClient(){
     const lastName=document.getElementById("newSurname").value.trim();
     const phone=document.getElementById("newPhone").value.trim();
     const email=document.getElementById("newEmail").value.trim();
-
+const startPackage =
+  document.getElementById("startPackage").value;
     if(firstName===""){
       alert("Podaj imię.");
       return;
@@ -937,15 +936,16 @@ async function saveNewClient(){
 
 let result=await api(
   "addClient",
-      {
-        token:TOKEN,
-        firstName,
-        lastName,
-        phone,
-        email,
-        forceCreate:false
-      }
-    );
+  {
+      token:TOKEN,
+      firstName,
+      lastName,
+      phone,
+      email,
+      startPackage,
+      forceCreate:false
+  }
+);
 
     if(result.duplicate){
 
@@ -963,15 +963,16 @@ let result=await api(
 
 result=await api(
   "addClient",
-        {
-          token:TOKEN,
-          firstName,
-          lastName,
-          phone,
-          email,
-          forceCreate:true
-        }
-      );
+  {
+      token:TOKEN,
+      firstName,
+      lastName,
+      phone,
+      email,
+      startPackage,
+      forceCreate:true
+  }
+);
 
     }
 
