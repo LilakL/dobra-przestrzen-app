@@ -869,39 +869,94 @@ function closeAddClient(){
 
 }
 
-function saveNewClient(){
+async function saveNewClient(){
 
-    const name =
-      document
-      .getElementById("newName")
-      .value
-      .trim();
+  const firstName=document.getElementById("newName").value.trim();
+  const lastName=document.getElementById("newSurname").value.trim();
+  const phone=document.getElementById("newPhone").value.trim();
+  const email=document.getElementById("newEmail").value.trim();
 
-    const surname =
-      document
-      .getElementById("newSurname")
-      .value
-      .trim();
+  if(firstName===""){
+    alert("Podaj imię.");
+    return;
+  }
 
-    if(name===""){
+  if(lastName===""){
+    alert("Podaj nazwisko.");
+    return;
+  }
 
-        alert("Podaj imię.");
+  const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        return;
+  if(email!=="" && !emailRegex.test(email)){
+    alert("Niepoprawny adres e-mail.");
+    return;
+  }
 
+  const result=await apiPost(
+    "addClient",
+    {
+      token:TOKEN,
+      firstName:firstName,
+      lastName:lastName,
+      phone:phone,
+      email:email,
+      forceCreate:false
     }
+  );
 
-    if(surname===""){
+  if(result.duplicate){
 
-        alert("Podaj nazwisko.");
+      if(confirm(
+        "Uczestnik już istnieje:\n\n"+
+        result.name+
+        "\n"+
+        result.id+
+        "\n\nDodać mimo to?"
+      )){
 
-        return;
+          const forceResult=
+            await apiPost(
+              "addClient",
+              {
+                token:TOKEN,
+                firstName:firstName,
+                lastName:lastName,
+                phone:phone,
+                email:email,
+                forceCreate:true
+              }
+            );
 
-    }
+          if(forceResult.ok){
 
-    alert(
-      "Formularz działa.\n\nW następnym kroku podłączymy zapis do Google Sheets."
-    );
+              alert(
+                "Dodano uczestnika.\nID: "+
+                forceResult.id
+              );
+
+          }
+
+      }
+
+      return;
+
+  }
+
+  if(!result.ok){
+
+      alert(result.msg);
+
+      return;
+
+  }
+
+  alert(
+    "Dodano uczestnika.\nID: "+
+    result.id
+  );
+
+  closeAddClient();
 
 }
 
