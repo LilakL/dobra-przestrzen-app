@@ -444,16 +444,32 @@ async function loadSchedule() {
   `;
 
 
-  const result =
-    await api(
-      "bookingSchedule",
-      {
-        startDate:
-          todayString(),
+const today = new Date();
 
-        days: 14
-      }
-    );
+const lastDayOfMonth =
+  new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  );
+
+const daysToEndOfMonth =
+  lastDayOfMonth.getDate() -
+  today.getDate() +
+  1;
+
+
+const result =
+  await api(
+    "bookingSchedule",
+    {
+      startDate:
+        todayString(),
+
+      days:
+        daysToEndOfMonth
+    }
+  );
 
 
   if (!result.ok) {
