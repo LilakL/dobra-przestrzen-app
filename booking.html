@@ -1,1 +1,943 @@
+<!DOCTYPE html>
+<html lang="pl">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>Dobra Przestrzeń – Rezerwacje</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f5f7f6;
+  color: #26332d;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.06);
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: #286247;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: #68756e;
+}
+
+.client {
+  margin-top: 20px;
+  padding: 15px;
+  background: #eef5f1;
+  border-radius: 12px;
+}
+
+.section-title {
+  font-size: 22px;
+  margin: 25px 0 12px;
+}
+
+.day {
+  margin-bottom: 22px;
+}
+
+.day-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.class-card {
+  background: white;
+  border-radius: 15px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+
+.class-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.class-name {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.hour {
+  color: #286247;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.info {
+  margin-top: 8px;
+  color: #68756e;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.reserve {
+  background: #286247;
+  color: white;
+}
+
+.reserve:disabled {
+  background: #c8cfcb;
+  cursor: not-allowed;
+}
+
+.cancel {
+  background: #f2e5e5;
+  color: #8a3030;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 10px;
+  color: #68756e;
+}
+
+.error {
+  background: #fbe9e9;
+  color: #8a3030;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.success {
+  background: #e8f5ec;
+  color: #286247;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.reservation {
+  background: white;
+  border-radius: 15px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+
+.empty {
+  color: #68756e;
+  padding: 15px 0;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+
+    <div class="logo">
+      Dobra Przestrzeń
+    </div>
+
+    <div class="subtitle">
+      Rezerwacja zajęć
+    </div>
+
+    <div
+      id="client"
+      class="client"
+      style="display:none;"
+    ></div>
+
+  </div>
+
+
+  <div id="message"></div>
+
+
+  <div id="reservationsSection">
+
+    <div class="section-title">
+      Moje rezerwacje
+    </div>
+
+    <div id="reservations">
+      <div class="loading">
+        Ładowanie...
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="section-title">
+    Dostępne zajęcia
+  </div>
+
+  <div id="schedule">
+
+    <div class="loading">
+      Ładowanie grafiku...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/************************************************
+ * KONFIGURACJA
+ ************************************************/
+
+const API_URL =
+  "TU_WKLEJ_ADRES_WDROZENIA_APPS_SCRIPT";
+
+
+/************************************************
+ * TOKEN KLIENTKI
+ ************************************************/
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const token =
+  params.get("token");
+
+
+/************************************************
+ * ELEMENTY
+ ************************************************/
+
+const clientBox =
+  document.getElementById("client");
+
+const scheduleBox =
+  document.getElementById("schedule");
+
+const reservationsBox =
+  document.getElementById("reservations");
+
+const messageBox =
+  document.getElementById("message");
+
+
+/************************************************
+ * KOMUNIKAT
+ ************************************************/
+
+function showMessage(
+  text,
+  type = "success"
+) {
+
+  messageBox.innerHTML = `
+    <div class="${type}">
+      ${text}
+    </div>
+  `;
+
+}
+
+
+/************************************************
+ * DATA
+ ************************************************/
+
+function todayString() {
+
+  const d = new Date();
+
+  const year =
+    d.getFullYear();
+
+  const month =
+    String(
+      d.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      d.getDate()
+    ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
+/************************************************
+ * API GET
+ ************************************************/
+
+async function api(
+  action,
+  parameters = {}
+) {
+
+  const url =
+    new URL(API_URL);
+
+  url.searchParams.set(
+    "action",
+    action
+  );
+
+  url.searchParams.set(
+    "token",
+    token
+  );
+
+  Object.keys(parameters)
+    .forEach(key => {
+
+      if (
+        parameters[key] !== undefined &&
+        parameters[key] !== null
+      ) {
+
+        url.searchParams.set(
+          key,
+          parameters[key]
+        );
+
+      }
+
+    });
+
+
+  const response =
+    await fetch(
+      url.toString()
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Błąd komunikacji z serwerem."
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/************************************************
+ * FORMAT DNIA
+ ************************************************/
+
+function formatDate(
+  dateString,
+  dayName
+) {
+
+  const parts =
+    dateString.split("-");
+
+  return `
+    ${dayName}
+    ${parts[2]}.${parts[1]}
+  `;
+
+}
+
+
+/************************************************
+ * START
+ ************************************************/
+
+async function init() {
+
+  if (!token) {
+
+    showMessage(
+      "Ten link rezerwacyjny jest nieprawidłowy.",
+      "error"
+    );
+
+    scheduleBox.innerHTML = "";
+
+    return;
+
+  }
+
+
+  try {
+
+    await loadReservations();
+
+    await loadSchedule();
+
+  }
+  catch(error) {
+
+    console.error(error);
+
+    showMessage(
+      error.message ||
+      "Nie udało się pobrać danych.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/************************************************
+ * GRAFIK
+ ************************************************/
+
+async function loadSchedule() {
+
+  scheduleBox.innerHTML = `
+    <div class="loading">
+      Ładowanie grafiku...
+    </div>
+  `;
+
+
+  const result =
+    await api(
+      "bookingSchedule",
+      {
+        startDate:
+          todayString(),
+
+        days: 14
+      }
+    );
+
+
+  if (!result.ok) {
+
+    throw new Error(
+      result.msg ||
+      "Nie udało się pobrać grafiku."
+    );
+
+  }
+
+
+  showClient(
+    result.client
+  );
+
+
+  renderSchedule(
+    result.schedule
+  );
+
+}
+
+
+/************************************************
+ * KLIENT
+ ************************************************/
+
+function showClient(
+  client
+) {
+
+  clientBox.style.display =
+    "block";
+
+  clientBox.innerHTML = `
+    <strong>
+      ${client.firstName}
+      ${client.lastName}
+    </strong>
+    <br>
+    <span>
+      Możesz tutaj samodzielnie
+      rezerwować swoje zajęcia.
+    </span>
+  `;
+
+}
+
+
+/************************************************
+ * RENDER GRAFIKU
+ ************************************************/
+
+function renderSchedule(
+  schedule
+) {
+
+  if (
+    !schedule ||
+    schedule.length === 0
+  ) {
+
+    scheduleBox.innerHTML = `
+      <div class="empty">
+        Brak zaplanowanych zajęć.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const days = {};
+
+
+  schedule.forEach(item => {
+
+    if (!days[item.date]) {
+
+      days[item.date] = {
+        day: item.day,
+        classes: []
+      };
+
+    }
+
+    days[item.date]
+      .classes
+      .push(item);
+
+  });
+
+
+  scheduleBox.innerHTML = "";
+
+
+  Object.keys(days)
+    .sort()
+    .forEach(date => {
+
+      const dayData =
+        days[date];
+
+
+      const dayDiv =
+        document.createElement(
+          "div"
+        );
+
+      dayDiv.className =
+        "day";
+
+
+      dayDiv.innerHTML = `
+        <div class="day-title">
+          ${formatDate(
+            date,
+            dayData.day
+          )}
+        </div>
+      `;
+
+
+      dayData.classes
+        .forEach(item => {
+
+          const card =
+            document.createElement(
+              "div"
+            );
+
+          card.className =
+            "class-card";
+
+
+          const full =
+            item.full;
+
+
+          card.innerHTML = `
+
+            <div class="class-top">
+
+              <div class="class-name">
+                ${item.className}
+              </div>
+
+              <div class="hour">
+                ${item.hour}
+              </div>
+
+            </div>
+
+            <div class="info">
+
+              Wolne miejsca:
+              <strong>
+                ${item.available}
+              </strong>
+              z ${item.limit}
+
+            </div>
+
+            <button
+              class="reserve"
+              ${full ? "disabled" : ""}
+              onclick='reserveClass(
+                ${JSON.stringify(item)}
+              )'
+            >
+
+              ${
+                full
+                  ? "BRAK MIEJSC"
+                  : "ZAREZERWUJ"
+              }
+
+            </button>
+
+          `;
+
+
+          dayDiv.appendChild(
+            card
+          );
+
+        });
+
+
+      scheduleBox.appendChild(
+        dayDiv
+      );
+
+    });
+
+}
+
+
+/************************************************
+ * REZERWACJA
+ ************************************************/
+
+async function reserveClass(
+  item
+) {
+
+  if (
+    !confirm(
+      `Czy chcesz zarezerwować:
+
+${item.className}
+${item.day}, ${item.hour}
+${item.date}`
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        "bookingCreate",
+        {
+          date:
+            item.date,
+
+          hour:
+            item.hour,
+
+          className:
+            item.className
+        }
+      );
+
+
+    if (!result.ok) {
+
+      showMessage(
+        result.msg ||
+        "Nie udało się utworzyć rezerwacji.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "Rezerwacja została potwierdzona."
+    );
+
+
+    await loadReservations();
+
+    await loadSchedule();
+
+  }
+  catch(error) {
+
+    console.error(error);
+
+    showMessage(
+      "Wystąpił błąd podczas rezerwacji.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/************************************************
+ * MOJE REZERWACJE
+ ************************************************/
+
+async function loadReservations() {
+
+  reservationsBox.innerHTML = `
+    <div class="loading">
+      Ładowanie...
+    </div>
+  `;
+
+
+  const result =
+    await api(
+      "bookingMyReservations"
+    );
+
+
+  if (!result.ok) {
+
+    throw new Error(
+      result.msg ||
+      "Nie udało się pobrać rezerwacji."
+    );
+
+  }
+
+
+  renderReservations(
+    result.reservations
+  );
+
+}
+
+
+/************************************************
+ * RENDER REZERWACJI
+ ************************************************/
+
+function renderReservations(
+  reservations
+) {
+
+  const active =
+    reservations.filter(
+      r =>
+        r.status === "CONFIRMED" ||
+        r.status === "CHECKED_IN"
+    );
+
+
+  if (
+    active.length === 0
+  ) {
+
+    reservationsBox.innerHTML = `
+      <div class="empty">
+        Nie masz obecnie żadnych
+        aktywnych rezerwacji.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  reservationsBox.innerHTML = "";
+
+
+  active
+    .sort(
+      (a,b) =>
+        (
+          a.date + a.hour
+        ).localeCompare(
+          b.date + b.hour
+        )
+    )
+    .forEach(
+      reservation => {
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+
+        div.className =
+          "reservation";
+
+
+        div.innerHTML = `
+
+          <strong>
+            ${reservation.className}
+          </strong>
+
+          <br>
+
+          ${reservation.date}
+          — ${reservation.hour}
+
+          <button
+            class="cancel"
+            onclick="
+              cancelReservation(
+                '${reservation.reservationId}'
+              )
+            "
+          >
+
+            ANULUJ REZERWACJĘ
+
+          </button>
+
+        `;
+
+
+        reservationsBox.appendChild(
+          div
+        );
+
+      }
+    );
+
+}
+
+
+/************************************************
+ * ANULOWANIE
+ ************************************************/
+
+async function cancelReservation(
+  reservationId
+) {
+
+  if (
+    !confirm(
+      "Czy na pewno chcesz anulować tę rezerwację?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const result =
+      await api(
+        "bookingCancel",
+        {
+          reservationId:
+            reservationId
+        }
+      );
+
+
+    if (!result.ok) {
+
+      showMessage(
+        result.msg ||
+        "Nie udało się anulować rezerwacji.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    showMessage(
+      "Rezerwacja została anulowana."
+    );
+
+
+    await loadReservations();
+
+    await loadSchedule();
+
+  }
+  catch(error) {
+
+    console.error(error);
+
+    showMessage(
+      "Wystąpił błąd podczas anulowania.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/************************************************
+ * START APLIKACJI
+ ************************************************/
+
+init();
+
+</script>
+
+</body>
+
+</html>
