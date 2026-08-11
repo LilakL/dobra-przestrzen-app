@@ -802,13 +802,10 @@ function renderReservations(
 
   reservationsBox.innerHTML = "";
 
-const cancellable =
-  active.filter(
-    r => r.status === "CONFIRMED"
-  );
-cancellable
+
+  active
     .sort(
-      (a,b) =>
+      (a, b) =>
         (
           a.date + a.hour
         ).localeCompare(
@@ -828,6 +825,27 @@ cancellable
           "reservation";
 
 
+        const cancelButton =
+          reservation.status === "CONFIRMED"
+            ? `
+              <button
+                class="cancel"
+                onclick="
+                  cancelReservation(
+                    '${reservation.reservationId}'
+                  )
+                "
+              >
+                ANULUJ REZERWACJĘ
+              </button>
+            `
+            : `
+              <div class="info">
+                Obecność potwierdzona
+              </div>
+            `;
+
+
         div.innerHTML = `
 
           <strong>
@@ -839,18 +857,7 @@ cancellable
           ${reservation.date}
           — ${reservation.hour}
 
-          <button
-            class="cancel"
-            onclick="
-              cancelReservation(
-                '${reservation.reservationId}'
-              )
-            "
-          >
-
-            ANULUJ REZERWACJĘ
-
-          </button>
+          ${cancelButton}
 
         `;
 
