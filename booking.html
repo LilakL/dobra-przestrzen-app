@@ -802,8 +802,11 @@ function renderReservations(
 
   reservationsBox.innerHTML = "";
 
-
-  active
+const cancellable =
+  active.filter(
+    r => r.status === "CONFIRMED"
+  );
+cancellable
     .sort(
       (a,b) =>
         (
