@@ -31,6 +31,11 @@ body {
   padding: 20px;
 }
 
+
+/************************************************
+ * HEADER
+ ************************************************/
+
 .header {
   background: white;
   border-radius: 20px;
@@ -57,10 +62,115 @@ body {
   border-radius: 12px;
 }
 
+
+/************************************************
+ * SEKCJE
+ ************************************************/
+
 .section-title {
   font-size: 22px;
   margin: 25px 0 12px;
+  color: #26332d;
 }
+
+
+/************************************************
+ * EVENTY SPECJALNE
+ ************************************************/
+
+.events-section {
+  margin-top: 25px;
+  margin-bottom: 30px;
+}
+
+.events-header {
+  background:
+    linear-gradient(
+      135deg,
+      #285c45,
+      #3c765b
+    );
+
+  color: white;
+  padding: 24px;
+  border-radius: 20px 20px 0 0;
+}
+
+.events-header-label {
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  opacity: .85;
+}
+
+.events-header-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 7px;
+}
+
+.events-header-text {
+  margin-top: 10px;
+  line-height: 1.6;
+  font-size: 15px;
+  color: #e3f2e9;
+}
+
+.events-container {
+  background: #edf5f0;
+  padding: 16px;
+  border-radius: 0 0 20px 20px;
+}
+
+.event-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  border: 1px solid #dfeae3;
+}
+
+.event-card:last-child {
+  margin-bottom: 0;
+}
+
+.event-date {
+  color: #286247;
+  font-size: 13px;
+  letter-spacing: .5px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.event-name {
+  margin-top: 7px;
+  font-size: 21px;
+  font-weight: bold;
+  line-height: 1.35;
+  color: #214f3a;
+}
+
+.event-description {
+  margin-top: 10px;
+  color: #5f6d65;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.event-availability {
+  margin-top: 15px;
+  background: #f5f9f6;
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-size: 14px;
+  color: #536158;
+}
+
+
+/************************************************
+ * REGULARNY GRAFIK
+ ************************************************/
 
 .day {
   margin-bottom: 22px;
@@ -103,6 +213,11 @@ body {
   font-size: 14px;
 }
 
+
+/************************************************
+ * BUTTONY
+ ************************************************/
+
 button {
   width: 100%;
   border: 0;
@@ -119,15 +234,29 @@ button {
   color: white;
 }
 
+.reserve:hover:not(:disabled) {
+  background: #214f3a;
+}
+
 .reserve:disabled {
   background: #c8cfcb;
   cursor: not-allowed;
+}
+
+.event-reserve {
+  padding: 14px;
+  font-size: 16px;
 }
 
 .cancel {
   background: #f2e5e5;
   color: #8a3030;
 }
+
+
+/************************************************
+ * KOMUNIKATY
+ ************************************************/
 
 .loading {
   text-align: center;
@@ -151,6 +280,11 @@ button {
   margin-bottom: 15px;
 }
 
+
+/************************************************
+ * REZERWACJE
+ ************************************************/
+
 .reservation {
   background: white;
   border-radius: 15px;
@@ -164,6 +298,39 @@ button {
   padding: 15px 0;
 }
 
+
+/************************************************
+ * MOBILE
+ ************************************************/
+
+@media (max-width: 600px) {
+
+  .container {
+    padding: 12px;
+  }
+
+  .header {
+    padding: 22px 18px;
+  }
+
+  .events-header {
+    padding: 22px 18px;
+  }
+
+  .events-header-title {
+    font-size: 23px;
+  }
+
+  .event-card {
+    padding: 18px;
+  }
+
+  .event-name {
+    font-size: 19px;
+  }
+
+}
+
 </style>
 
 </head>
@@ -173,6 +340,9 @@ button {
 
 <div class="container">
 
+
+  <!-- HEADER -->
+
   <div class="header">
 
     <div class="logo">
@@ -180,7 +350,7 @@ button {
     </div>
 
     <div class="subtitle">
-      Rezerwacja zajęć
+      Rezerwacje
     </div>
 
     <div
@@ -195,6 +365,8 @@ button {
   <div id="message"></div>
 
 
+  <!-- MOJE REZERWACJE -->
+
   <div id="reservationsSection">
 
     <div class="section-title">
@@ -202,25 +374,70 @@ button {
     </div>
 
     <div id="reservations">
+
       <div class="loading">
         Ładowanie...
       </div>
+
     </div>
 
   </div>
 
 
-  <div class="section-title">
-    Dostępne zajęcia
+  <!-- EVENTY -->
+
+  <div
+    id="eventsSection"
+    class="events-section"
+    style="display:none;"
+  >
+
+    <div class="events-header">
+
+      <div class="events-header-label">
+        DOBRA PRZESTRZEŃ
+      </div>
+
+      <div class="events-header-title">
+        ✨ Wydarzenia specjalne
+      </div>
+
+      <div class="events-header-text">
+        Wyjątkowe spotkania stworzone po to,
+        aby znaleźć czas dla siebie,
+        dobrych ludzi i dobrej energii.
+      </div>
+
+    </div>
+
+    <div
+      id="events"
+      class="events-container"
+    ></div>
+
   </div>
 
-  <div id="schedule">
 
-    <div class="loading">
-      Ładowanie grafiku...
+  <!-- REGULARNE ZAJĘCIA -->
+
+  <div
+    id="classesSection"
+  >
+
+    <div class="section-title">
+      Dostępne zajęcia
+    </div>
+
+    <div id="schedule">
+
+      <div class="loading">
+        Ładowanie grafiku...
+      </div>
+
     </div>
 
   </div>
+
 
 </div>
 
@@ -258,6 +475,12 @@ const clientBox =
 const scheduleBox =
   document.getElementById("schedule");
 
+const eventsBox =
+  document.getElementById("events");
+
+const eventsSection =
+  document.getElementById("eventsSection");
+
 const reservationsBox =
   document.getElementById("reservations");
 
@@ -284,12 +507,13 @@ function showMessage(
 
 
 /************************************************
- * DATA
+ * DATA DZISIAJ
  ************************************************/
 
 function todayString() {
 
-  const d = new Date();
+  const d =
+    new Date();
 
   const year =
     d.getFullYear();
@@ -297,14 +521,24 @@ function todayString() {
   const month =
     String(
       d.getMonth() + 1
-    ).padStart(2, "0");
+    )
+    .padStart(
+      2,
+      "0"
+    );
 
   const day =
     String(
       d.getDate()
-    ).padStart(2, "0");
+    )
+    .padStart(
+      2,
+      "0"
+    );
 
-  return `${year}-${month}-${day}`;
+  return (
+    `${year}-${month}-${day}`
+  );
 
 }
 
@@ -319,20 +553,28 @@ async function api(
 ) {
 
   const url =
-    new URL(API_URL);
+    new URL(
+      API_URL
+    );
+
 
   url.searchParams.set(
     "action",
     action
   );
 
+
   url.searchParams.set(
     "token",
     token
   );
 
-  Object.keys(parameters)
-    .forEach(key => {
+
+  Object.keys(
+    parameters
+  )
+  .forEach(
+    key => {
 
       if (
         parameters[key] !== undefined &&
@@ -346,7 +588,8 @@ async function api(
 
       }
 
-    });
+    }
+  );
 
 
   const response =
@@ -355,7 +598,9 @@ async function api(
     );
 
 
-  if (!response.ok) {
+  if (
+    !response.ok
+  ) {
 
     throw new Error(
       "Błąd komunikacji z serwerem."
@@ -370,7 +615,7 @@ async function api(
 
 
 /************************************************
- * FORMAT DNIA
+ * FORMAT DATY
  ************************************************/
 
 function formatDate(
@@ -390,6 +635,28 @@ function formatDate(
 
 
 /************************************************
+ * FORMAT PEŁNEJ DATY
+ ************************************************/
+
+function formatFullDate(
+  dateString
+) {
+
+  const parts =
+    dateString.split("-");
+
+  return (
+    parts[2] +
+    "." +
+    parts[1] +
+    "." +
+    parts[0]
+  );
+
+}
+
+
+/************************************************
  * START
  ************************************************/
 
@@ -402,7 +669,8 @@ async function init() {
       "error"
     );
 
-    scheduleBox.innerHTML = "";
+    scheduleBox.innerHTML =
+      "";
 
     return;
 
@@ -418,7 +686,10 @@ async function init() {
   }
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     showMessage(
       error.message ||
@@ -433,6 +704,10 @@ async function init() {
 
 /************************************************
  * GRAFIK
+ *
+ * WAŻNE:
+ * pobieramy 31 dni,
+ * a nie tylko do końca miesiąca.
  ************************************************/
 
 async function loadSchedule() {
@@ -444,35 +719,31 @@ async function loadSchedule() {
   `;
 
 
-const today = new Date();
-
-const lastDayOfMonth =
-  new Date(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    0
-  );
-
-const daysToEndOfMonth =
-  lastDayOfMonth.getDate() -
-  today.getDate() +
-  1;
+  eventsBox.innerHTML = `
+    <div class="loading">
+      Ładowanie wydarzeń...
+    </div>
+  `;
 
 
-const result =
-  await api(
-    "bookingSchedule",
-    {
-      startDate:
-        todayString(),
+  const result =
+    await api(
+      "bookingSchedule",
+      {
 
-      days:
-        daysToEndOfMonth
-    }
-  );
+        startDate:
+          todayString(),
+
+        days:
+          31
+
+      }
+    );
 
 
-  if (!result.ok) {
+  if (
+    !result.ok
+  ) {
 
     throw new Error(
       result.msg ||
@@ -495,7 +766,7 @@ const result =
 
 
 /************************************************
- * KLIENT
+ * KLIENTKA
  ************************************************/
 
 function showClient(
@@ -505,26 +776,237 @@ function showClient(
   clientBox.style.display =
     "block";
 
+
   clientBox.innerHTML = `
+
     <strong>
       ${client.firstName}
       ${client.lastName}
     </strong>
+
     <br>
+
     <span>
-      Możesz tutaj samodzielnie
-      rezerwować swoje zajęcia.
+      Tutaj możesz rezerwować swoje zajęcia
+      oraz wydarzenia specjalne.
     </span>
+
   `;
 
 }
 
 
 /************************************************
- * RENDER GRAFIKU
+ * ROZDZIELENIE:
+ *
+ * CLASS
+ * EVENT
  ************************************************/
 
 function renderSchedule(
+  schedule
+) {
+
+  if (
+    !schedule ||
+    schedule.length === 0
+  ) {
+
+    scheduleBox.innerHTML = `
+      <div class="empty">
+        Brak zaplanowanych zajęć.
+      </div>
+    `;
+
+    eventsSection.style.display =
+      "none";
+
+    return;
+
+  }
+
+
+  const events =
+    schedule.filter(
+      item =>
+        item.type === "EVENT"
+    );
+
+
+  const classes =
+    schedule.filter(
+      item =>
+        item.type !== "EVENT"
+    );
+
+
+  /************************************************
+   * EVENTY
+   ************************************************/
+
+  renderEvents(
+    events
+  );
+
+
+  /************************************************
+   * ZAJĘCIA
+   ************************************************/
+
+  renderClasses(
+    classes
+  );
+
+}
+
+
+/************************************************
+ * RENDER EVENTÓW
+ ************************************************/
+
+function renderEvents(
+  events
+) {
+
+  if (
+    !events ||
+    events.length === 0
+  ) {
+
+    eventsSection.style.display =
+      "none";
+
+    eventsBox.innerHTML =
+      "";
+
+    return;
+
+  }
+
+
+  eventsSection.style.display =
+    "block";
+
+
+  eventsBox.innerHTML =
+    "";
+
+
+  events
+    .sort(
+      (a, b) =>
+        (
+          a.date +
+          a.hour
+        )
+        .localeCompare(
+          b.date +
+          b.hour
+        )
+    )
+    .forEach(
+      item => {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "event-card";
+
+
+        const full =
+          item.full;
+
+
+        const description =
+          item.description
+            ? `
+              <div class="event-description">
+                ${item.description}
+              </div>
+            `
+            : "";
+
+
+        card.innerHTML = `
+
+          <div class="event-date">
+
+            ${item.day}
+            •
+            ${formatFullDate(item.date)}
+            •
+            ${item.hour}
+
+          </div>
+
+
+          <div class="event-name">
+
+            ${item.className}
+
+          </div>
+
+
+          ${description}
+
+
+          <div class="event-availability">
+
+            Wolne miejsca:
+
+            <strong>
+              ${item.available}
+            </strong>
+
+            z ${item.limit}
+
+          </div>
+
+
+          <button
+            class="reserve event-reserve"
+
+            ${
+              full
+                ? "disabled"
+                : ""
+            }
+
+            onclick='reserveClass(
+              ${JSON.stringify(item)}
+            )'
+          >
+
+            ${
+              full
+                ? "BRAK WOLNYCH MIEJSC"
+                : "🌿 ZAREZERWUJ MIEJSCE"
+            }
+
+          </button>
+
+        `;
+
+
+        eventsBox.appendChild(
+          card
+        );
+
+      }
+    );
+
+}
+
+
+/************************************************
+ * RENDER REGULARNYCH ZAJĘĆ
+ ************************************************/
+
+function renderClasses(
   schedule
 ) {
 
@@ -547,30 +1029,46 @@ function renderSchedule(
   const days = {};
 
 
-  schedule.forEach(item => {
+  schedule.forEach(
+    item => {
 
-    if (!days[item.date]) {
+      if (
+        !days[item.date]
+      ) {
 
-      days[item.date] = {
-        day: item.day,
-        classes: []
-      };
+        days[item.date] = {
+
+          day:
+            item.day,
+
+          classes:
+            []
+
+        };
+
+      }
+
+
+      days[item.date]
+        .classes
+        .push(
+          item
+        );
 
     }
-
-    days[item.date]
-      .classes
-      .push(item);
-
-  });
+  );
 
 
-  scheduleBox.innerHTML = "";
+  scheduleBox.innerHTML =
+    "";
 
 
-  Object.keys(days)
-    .sort()
-    .forEach(date => {
+  Object.keys(
+    days
+  )
+  .sort()
+  .forEach(
+    date => {
 
       const dayData =
         days[date];
@@ -581,91 +1079,110 @@ function renderSchedule(
           "div"
         );
 
+
       dayDiv.className =
         "day";
 
 
       dayDiv.innerHTML = `
+
         <div class="day-title">
+
           ${formatDate(
             date,
             dayData.day
           )}
+
         </div>
+
       `;
 
 
       dayData.classes
-        .forEach(item => {
+        .forEach(
+          item => {
 
-          const card =
-            document.createElement(
-              "div"
+            const card =
+              document.createElement(
+                "div"
+              );
+
+
+            card.className =
+              "class-card";
+
+
+            const full =
+              item.full;
+
+
+            card.innerHTML = `
+
+              <div class="class-top">
+
+                <div class="class-name">
+                  ${item.className}
+                </div>
+
+                <div class="hour">
+                  ${item.hour}
+                </div>
+
+              </div>
+
+
+              <div class="info">
+
+                Wolne miejsca:
+
+                <strong>
+                  ${item.available}
+                </strong>
+
+                z ${item.limit}
+
+              </div>
+
+
+              <button
+                class="reserve"
+
+                ${
+                  full
+                    ? "disabled"
+                    : ""
+                }
+
+                onclick='reserveClass(
+                  ${JSON.stringify(item)}
+                )'
+              >
+
+                ${
+                  full
+                    ? "BRAK MIEJSC"
+                    : "ZAREZERWUJ"
+                }
+
+              </button>
+
+            `;
+
+
+            dayDiv.appendChild(
+              card
             );
 
-          card.className =
-            "class-card";
-
-
-          const full =
-            item.full;
-
-
-          card.innerHTML = `
-
-            <div class="class-top">
-
-              <div class="class-name">
-                ${item.className}
-              </div>
-
-              <div class="hour">
-                ${item.hour}
-              </div>
-
-            </div>
-
-            <div class="info">
-
-              Wolne miejsca:
-              <strong>
-                ${item.available}
-              </strong>
-              z ${item.limit}
-
-            </div>
-
-            <button
-              class="reserve"
-              ${full ? "disabled" : ""}
-              onclick='reserveClass(
-                ${JSON.stringify(item)}
-              )'
-            >
-
-              ${
-                full
-                  ? "BRAK MIEJSC"
-                  : "ZAREZERWUJ"
-              }
-
-            </button>
-
-          `;
-
-
-          dayDiv.appendChild(
-            card
-          );
-
-        });
+          }
+        );
 
 
       scheduleBox.appendChild(
         dayDiv
       );
 
-    });
+    }
+  );
 
 }
 
@@ -678,9 +1195,15 @@ async function reserveClass(
   item
 ) {
 
+  const itemType =
+    item.type === "EVENT"
+      ? "wydarzenie"
+      : "zajęcia";
+
+
   if (
     !confirm(
-      `Czy chcesz zarezerwować:
+      `Czy chcesz zarezerwować ${itemType}:
 
 ${item.className}
 ${item.day}, ${item.hour}
@@ -699,6 +1222,7 @@ ${item.date}`
       await api(
         "bookingCreate",
         {
+
           date:
             item.date,
 
@@ -707,11 +1231,14 @@ ${item.date}`
 
           className:
             item.className
+
         }
       );
 
 
-    if (!result.ok) {
+    if (
+      !result.ok
+    ) {
 
       showMessage(
         result.msg ||
@@ -724,9 +1251,22 @@ ${item.date}`
     }
 
 
-    showMessage(
-      "Rezerwacja została potwierdzona."
-    );
+    if (
+      item.type === "EVENT"
+    ) {
+
+      showMessage(
+        "Twoje miejsce na wydarzeniu zostało zarezerwowane. Do zobaczenia w Dobrej Przestrzeni! 🌿"
+      );
+
+    }
+    else {
+
+      showMessage(
+        "Rezerwacja została potwierdzona."
+      );
+
+    }
 
 
     await loadReservations();
@@ -736,7 +1276,10 @@ ${item.date}`
   }
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     showMessage(
       "Wystąpił błąd podczas rezerwacji.",
@@ -767,7 +1310,9 @@ async function loadReservations() {
     );
 
 
-  if (!result.ok) {
+  if (
+    !result.ok
+  ) {
 
     throw new Error(
       result.msg ||
@@ -816,16 +1361,20 @@ function renderReservations(
   }
 
 
-  reservationsBox.innerHTML = "";
+  reservationsBox.innerHTML =
+    "";
 
 
   active
     .sort(
       (a, b) =>
         (
-          a.date + a.hour
-        ).localeCompare(
-          b.date + b.hour
+          a.date +
+          a.hour
+        )
+        .localeCompare(
+          b.date +
+          b.hour
         )
     )
     .forEach(
@@ -842,23 +1391,33 @@ function renderReservations(
 
 
         const cancelButton =
-          reservation.status === "CONFIRMED"
+          reservation.status ===
+          "CONFIRMED"
+
             ? `
+
               <button
                 class="cancel"
+
                 onclick="
                   cancelReservation(
                     '${reservation.reservationId}'
                   )
                 "
               >
+
                 ANULUJ REZERWACJĘ
+
               </button>
+
             `
+
             : `
+
               <div class="info">
                 Obecność potwierdzona
               </div>
+
             `;
 
 
@@ -913,13 +1472,17 @@ async function cancelReservation(
       await api(
         "bookingCancel",
         {
+
           reservationId:
             reservationId
+
         }
       );
 
 
-    if (!result.ok) {
+    if (
+      !result.ok
+    ) {
 
       showMessage(
         result.msg ||
@@ -944,7 +1507,10 @@ async function cancelReservation(
   }
   catch(error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
+
 
     showMessage(
       "Wystąpił błąd podczas anulowania.",
