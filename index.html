@@ -1291,6 +1291,16 @@ function startScanner(){
 
 async function onScanSuccess(text){
 
+  /*
+   * WAŻNE:
+   * jeżeli klient jest już wybrany,
+   * nie pozwalamy skanerowi ponownie
+   * odczytać kodu i zresetować formularza.
+   */
+  if(currentClientId){
+    return;
+  }
+
   const now =
     Date.now();
 
@@ -1684,6 +1694,10 @@ async function executeRecharge(){
     .style.display =
       "none";
 
+  /*
+   * Dopiero po zakończeniu doładowania
+   * odblokowujemy możliwość kolejnego skanu.
+   */
   currentClientId = "";
 
   currentClient = null;
