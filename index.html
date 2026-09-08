@@ -75,6 +75,15 @@ select{
   font-size:22px;
 }
 
+.confirmRechargeBtn{
+  background:#0f766e;
+  color:white;
+  border:none;
+  font-weight:bold;
+  font-size:20px;
+  margin-top:16px;
+}
+
 .addClientBtn{
   background:#7c3aed;
   color:white;
@@ -127,6 +136,14 @@ select{
 .resultValue{
   font-size:36px;
   font-weight:bold;
+}
+
+#rechargeOptionsPanel{
+  display:none;
+  background:#eff6ff;
+  padding:15px;
+  border-radius:12px;
+  border:1px solid #bfdbfe;
 }
 
 /* ===== NOWY UCZESTNIK ===== */
@@ -265,7 +282,7 @@ id="clientRemain">
 
 <button
 id="checkinBtn"
-class="checkinBtn activeMode"
+class="checkinBtn"
 onclick="executeCheckin()">
 
 ✅ CHECK-IN
@@ -273,10 +290,19 @@ onclick="executeCheckin()">
 </button>
 
 
+<button
+id="rechargeBtn"
+class="rechargeBtn"
+onclick="showRechargeOptions()">
+
+💳 DOŁADUJ
+
+</button>
+
+
 <div
 id="rechargeOptionsPanel"
-class="optionGroup"
-style="display:none;">
+class="optionGroup">
 
 <label>Rodzaj doładowania</label>
 
@@ -339,17 +365,16 @@ class="passSummary">
 
 </div>
 
-</div>
-
 
 <button
-id="rechargeBtn"
-class="rechargeBtn"
+class="confirmRechargeBtn"
 onclick="executeRecharge()">
 
-💳 DOŁADUJ
+✅ ZATWIERDŹ DOŁADOWANIE
 
 </button>
+
+</div>
 
 
 <button
@@ -505,8 +530,6 @@ let lastScan = "";
 
 let lastScanTime = 0;
 
-let mode = "checkin";
-
 let currentClientId = "";
 
 let currentClient = null;
@@ -535,23 +558,18 @@ function beep(){
       window.webkitAudioContext
     )();
 
-
   const osc =
     ctx.createOscillator();
-
 
   osc.type = "sine";
 
   osc.frequency.value = 1000;
 
-
   osc.connect(
     ctx.destination
   );
 
-
   osc.start();
-
 
   setTimeout(()=>{
 
@@ -580,20 +598,16 @@ async function api(
 
     });
 
-
   const url =
     API_URL +
     "?" +
     params.toString();
 
-
   const response =
     await fetch(url);
 
-
   const txt =
     await response.text();
-
 
   return JSON.parse(txt);
 
@@ -601,50 +615,7 @@ async function api(
 
 
 /************************************************
- * API POST
- ************************************************/
-
-async function apiPost(
-  action,
-  data={}
-){
-
-  const response =
-    await fetch(
-      API_URL,
-      {
-
-        method:"POST",
-
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-
-        body:
-          JSON.stringify({
-
-            action,
-
-            ...data
-
-          })
-
-      }
-    );
-
-
-  const txt =
-    await response.text();
-
-
-  return JSON.parse(txt);
-
-}
-
-
-/************************************************
- * WYNIK OPERACJI
+ * WYNIK
  ************************************************/
 
 function showResult(
@@ -660,10 +631,8 @@ function showResult(
       "clientBox"
     );
 
-
   box.className =
     "card";
-
 
   if(type==="checkin"){
 
@@ -671,9 +640,7 @@ function showResult(
       "resultOk"
     );
 
-
     beep();
-
 
     if(navigator.vibrate){
 
@@ -687,16 +654,13 @@ function showResult(
 
   }
 
-
   if(type==="recharge"){
 
     box.classList.add(
       "resultRecharge"
     );
 
-
     beep();
-
 
     if(navigator.vibrate){
 
@@ -710,13 +674,11 @@ function showResult(
 
   }
 
-
   if(type==="error"){
 
     box.classList.add(
       "resultError"
     );
-
 
     if(navigator.vibrate){
 
@@ -731,7 +693,6 @@ function showResult(
 
   }
 
-
   document
     .getElementById(
       "clientName"
@@ -739,10 +700,8 @@ function showResult(
     .innerHTML =
       name || "";
 
-
   let html =
     title;
-
 
   if(before !== ""){
 
@@ -763,7 +722,6 @@ function showResult(
 
   }
 
-
   document
     .getElementById(
       "clientRemain"
@@ -771,21 +729,8 @@ function showResult(
     .innerHTML =
       html;
 
-
   box.style.display =
     "block";
-
-
-  setTimeout(()=>{
-
-    box.style.display =
-      "none";
-
-    lastScan = "";
-
-    lastScanTime = 0;
-
-  },3000);
 
 }
 
@@ -806,7 +751,6 @@ async function init(){
         }
       );
 
-
     document
       .getElementById(
         "operator"
@@ -822,15 +766,12 @@ async function init(){
         "schedule"
       );
 
-
     const sel =
       document.getElementById(
         "scheduleSelect"
       );
 
-
     sel.innerHTML = "";
-
 
     schedule.forEach(x=>{
 
@@ -839,7 +780,6 @@ async function init(){
           "option"
         );
 
-
       o.value =
         x.day +
         "|" +
@@ -847,14 +787,12 @@ async function init(){
         "|" +
         x.className;
 
-
       o.textContent =
         x.day +
         " | " +
         x.hour +
         " | " +
         x.className;
-
 
       sel.appendChild(o);
 
@@ -865,7 +803,6 @@ async function init(){
       await api(
         "rechargeOptions"
       );
-
 
     loadPassOptions();
 
@@ -891,7 +828,7 @@ async function init(){
 
 
 /************************************************
- * ZAŁADOWANIE KARNETÓW
+ * KARNETY
  ************************************************/
 
 function loadPassOptions(){
@@ -903,7 +840,6 @@ function loadPassOptions(){
       ? rechargeOptions.passes
       : [];
 
-
   [
     "rechargePass",
     "newPass"
@@ -912,9 +848,7 @@ function loadPassOptions(){
     const sel =
       document.getElementById(id);
 
-
     sel.innerHTML = "";
-
 
     passes.forEach(pass=>{
 
@@ -923,27 +857,22 @@ function loadPassOptions(){
           "option"
         );
 
-
       o.value =
         pass.id;
-
 
       o.textContent =
         pass.group +
         " | " +
         pass.entries +
-        " wejść" +
-        " | " +
+        " wejść | " +
         pass.price +
         " zł";
-
 
       sel.appendChild(o);
 
     });
 
   });
-
 
   updateRechargePassSummary();
 
@@ -953,14 +882,13 @@ function loadPassOptions(){
 
 
 /************************************************
- * FORMAT DATY
+ * DATA
  ************************************************/
 
 function localDateInputValue(date){
 
   const y =
     date.getFullYear();
-
 
   const m =
     String(
@@ -971,7 +899,6 @@ function localDateInputValue(date){
         "0"
       );
 
-
   const d =
     String(
       date.getDate()
@@ -980,7 +907,6 @@ function localDateInputValue(date){
         2,
         "0"
       );
-
 
   return (
     y +
@@ -993,10 +919,6 @@ function localDateInputValue(date){
 }
 
 
-/************************************************
- * DOMYŚLNA DATA STARTU
- ************************************************/
-
 function setDefaultPassDates(){
 
   const today =
@@ -1004,14 +926,12 @@ function setDefaultPassDates(){
       new Date()
     );
 
-
   document
     .getElementById(
       "rechargeStartDate"
     )
     .value =
       today;
-
 
   document
     .getElementById(
@@ -1022,10 +942,6 @@ function setDefaultPassDates(){
 
 }
 
-
-/************************************************
- * KARNET PO ID
- ************************************************/
 
 function getPassByIdClient(id){
 
@@ -1039,10 +955,6 @@ function getPassByIdClient(id){
 }
 
 
-/************************************************
- * DATA KOŃCA KARNETU
- ************************************************/
-
 function calculateEndDateText(
   startText,
   validityDays
@@ -1054,12 +966,10 @@ function calculateEndDateText(
 
   }
 
-
   const parts =
     startText
       .split("-")
       .map(Number);
-
 
   const d =
     new Date(
@@ -1071,7 +981,6 @@ function calculateEndDateText(
       0
     );
 
-
   d.setDate(
     d.getDate() +
     Number(
@@ -1079,8 +988,52 @@ function calculateEndDateText(
     )
   );
 
-
   return localDateInputValue(d);
+
+}
+
+
+/************************************************
+ * POKAŻ OPCJE DOŁADOWANIA
+ ************************************************/
+
+function showRechargeOptions(){
+
+  if(!currentClientId){
+
+    showResult(
+      "error",
+      "Najpierw zeskanuj klienta",
+      "",
+      "-"
+    );
+
+    return;
+
+  }
+
+  document
+    .getElementById(
+      "rechargeOptionsPanel"
+    )
+    .style.display =
+      "block";
+
+  document
+    .getElementById(
+      "rechargeMode"
+    )
+    .value =
+      "INDIVIDUAL";
+
+  document
+    .getElementById(
+      "rechargeAmount"
+    )
+    .value =
+      "1";
+
+  updateRechargeMode();
 
 }
 
@@ -1098,7 +1051,6 @@ function updateRechargeMode(){
       )
       .value === "PASS";
 
-
   document
     .getElementById(
       "individualRechargeBox"
@@ -1108,7 +1060,6 @@ function updateRechargeMode(){
         ? "none"
         : "block";
 
-
   document
     .getElementById(
       "passRechargeBox"
@@ -1117,7 +1068,6 @@ function updateRechargeMode(){
       isPass
         ? "block"
         : "none";
-
 
   if(isPass){
 
@@ -1143,7 +1093,6 @@ function updateRechargePassSummary(){
         .value
     );
 
-
   const start =
     document
       .getElementById(
@@ -1151,12 +1100,10 @@ function updateRechargePassSummary(){
       )
       .value;
 
-
   const box =
     document.getElementById(
       "rechargePassSummary"
     );
-
 
   if(!pass){
 
@@ -1167,13 +1114,11 @@ function updateRechargePassSummary(){
 
   }
 
-
   const end =
     calculateEndDateText(
       start,
       pass.validityDays
     );
-
 
   box.innerHTML =
     "<b>" +
@@ -1181,19 +1126,18 @@ function updateRechargePassSummary(){
     " – " +
     pass.name +
     "</b><br>" +
-
     "Wejścia: " +
     pass.entries +
     "<br>" +
-
     "Cena: " +
     pass.price +
     " zł<br>" +
-
     "Ważność: " +
     pass.validityDays +
     " dni<br>" +
-
+    "Start: <b>" +
+    start +
+    "</b><br>" +
     "Ważny do: <b>" +
     (
       end ||
@@ -1205,7 +1149,7 @@ function updateRechargePassSummary(){
 
 
 /************************************************
- * TRYB NOWEGO UCZESTNIKA
+ * NOWY UCZESTNIK - TRYB
  ************************************************/
 
 function updateNewClientRechargeMode(){
@@ -1217,7 +1161,6 @@ function updateNewClientRechargeMode(){
       )
       .value;
 
-
   document
     .getElementById(
       "newIndividualBox"
@@ -1227,7 +1170,6 @@ function updateNewClientRechargeMode(){
         ? "block"
         : "none";
 
-
   document
     .getElementById(
       "newPassBox"
@@ -1236,7 +1178,6 @@ function updateNewClientRechargeMode(){
       mode === "PASS"
         ? "block"
         : "none";
-
 
   if(
     mode === "PASS"
@@ -1249,10 +1190,6 @@ function updateNewClientRechargeMode(){
 }
 
 
-/************************************************
- * PODSUMOWANIE NOWEGO KARNETU
- ************************************************/
-
 function updateNewPassSummary(){
 
   const pass =
@@ -1264,7 +1201,6 @@ function updateNewPassSummary(){
         .value
     );
 
-
   const start =
     document
       .getElementById(
@@ -1272,12 +1208,10 @@ function updateNewPassSummary(){
       )
       .value;
 
-
   const box =
     document.getElementById(
       "newPassSummary"
     );
-
 
   if(!pass){
 
@@ -1288,13 +1222,11 @@ function updateNewPassSummary(){
 
   }
 
-
   const end =
     calculateEndDateText(
       start,
       pass.validityDays
     );
-
 
   box.innerHTML =
     "<b>" +
@@ -1302,89 +1234,24 @@ function updateNewPassSummary(){
     " – " +
     pass.name +
     "</b><br>" +
-
     "Wejścia: " +
     pass.entries +
     "<br>" +
-
     "Cena: " +
     pass.price +
     " zł<br>" +
-
     "Ważność: " +
     pass.validityDays +
     " dni<br>" +
-
+    "Start: <b>" +
+    start +
+    "</b><br>" +
     "Ważny do: <b>" +
     (
       end ||
       "wybierz datę startu"
     ) +
     "</b>";
-
-}
-
-
-/************************************************
- * TRYB PANELU
- ************************************************/
-
-function setMode(newMode){
-
-  mode =
-    newMode;
-
-
-  document
-    .getElementById(
-      "checkinBtn"
-    )
-    .classList.remove(
-      "activeMode"
-    );
-
-
-  document
-    .getElementById(
-      "rechargeBtn"
-    )
-    .classList.remove(
-      "activeMode"
-    );
-
-
-  if(mode==="checkin"){
-
-    document
-      .getElementById(
-        "checkinBtn"
-      )
-      .classList.add(
-        "activeMode"
-      );
-
-  }
-  else{
-
-    document
-      .getElementById(
-        "rechargeBtn"
-      )
-      .classList.add(
-        "activeMode"
-      );
-
-  }
-
-
-  document
-    .getElementById(
-      "rechargeOptionsPanel"
-    )
-    .style.display =
-      mode==="recharge"
-        ? "block"
-        : "none";
 
 }
 
@@ -1401,7 +1268,6 @@ function startScanner(){
 
   }
 
-
   scanner =
     new Html5QrcodeScanner(
       "reader",
@@ -1410,7 +1276,6 @@ function startScanner(){
         qrbox:250
       }
     );
-
 
   scanner.render(
     onScanSuccess,
@@ -1421,14 +1286,13 @@ function startScanner(){
 
 
 /************************************************
- * SKAN QR
+ * SKAN
  ************************************************/
 
 async function onScanSuccess(text){
 
   const now =
     Date.now();
-
 
   if(
     text === lastScan &&
@@ -1442,14 +1306,11 @@ async function onScanSuccess(text){
 
   }
 
-
   lastScan =
     text;
 
-
   lastScanTime =
     now;
-
 
   try{
 
@@ -1462,7 +1323,6 @@ async function onScanSuccess(text){
         )
         .trim();
 
-
     const preview =
       await api(
         "preview",
@@ -1471,7 +1331,6 @@ async function onScanSuccess(text){
           clientId:clientId
         }
       );
-
 
     if(!preview.ok){
 
@@ -1486,14 +1345,11 @@ async function onScanSuccess(text){
 
     }
 
-
     currentClientId =
       clientId;
 
-
     currentClient =
       preview;
-
 
     document
       .getElementById(
@@ -1502,14 +1358,12 @@ async function onScanSuccess(text){
       .className =
         "card";
 
-
     document
       .getElementById(
         "clientBox"
       )
       .style.display =
         "block";
-
 
     document
       .getElementById(
@@ -1520,7 +1374,6 @@ async function onScanSuccess(text){
         "<br>" +
         preview.name;
 
-
     document
       .getElementById(
         "clientRemain"
@@ -1530,6 +1383,13 @@ async function onScanSuccess(text){
         preview.remaining +
         "</b><br><br>" +
         "Wybierz operację:";
+
+    document
+      .getElementById(
+        "rechargeOptionsPanel"
+      )
+      .style.display =
+        "none";
 
   }
   catch(err){
@@ -1565,7 +1425,6 @@ async function executeCheckin(){
 
   }
 
-
   const selected =
     document
       .getElementById(
@@ -1573,7 +1432,6 @@ async function executeCheckin(){
       )
       .value
       .split("|");
-
 
   const result =
     await api(
@@ -1597,7 +1455,6 @@ async function executeCheckin(){
       }
     );
 
-
   if(!result.ok){
 
     showResult(
@@ -1610,7 +1467,6 @@ async function executeCheckin(){
     return;
 
   }
-
 
   const preview =
     await api(
@@ -1625,7 +1481,6 @@ async function executeCheckin(){
       }
     );
 
-
   showResult(
     "checkin",
     "✅ CHECK-IN OK",
@@ -1635,7 +1490,6 @@ async function executeCheckin(){
     preview.remaining,
     result.before
   );
-
 
   currentClientId = "";
 
@@ -1663,14 +1517,12 @@ async function executeRecharge(){
 
   }
 
-
   const rechargeMode =
     document
       .getElementById(
         "rechargeMode"
       )
       .value;
-
 
   const data = {
 
@@ -1685,13 +1537,7 @@ async function executeRecharge(){
 
   };
 
-
   let resultTitle = "";
-
-
-  /************************************************
-   * INDYWIDUALNE
-   ************************************************/
 
   if(
     rechargeMode ===
@@ -1705,22 +1551,14 @@ async function executeRecharge(){
         )
         .value;
 
-
     data.amount =
       amount;
-
 
     resultTitle =
       "➕ DOŁADOWANO +" +
       amount;
 
   }
-
-
-  /************************************************
-   * KARNET
-   ************************************************/
-
   else{
 
     const packageId =
@@ -1730,14 +1568,12 @@ async function executeRecharge(){
         )
         .value;
 
-
     const startDate =
       document
         .getElementById(
           "rechargeStartDate"
         )
         .value;
-
 
     if(!packageId){
 
@@ -1752,7 +1588,6 @@ async function executeRecharge(){
 
     }
 
-
     if(!startDate){
 
       showResult(
@@ -1766,31 +1601,25 @@ async function executeRecharge(){
 
     }
 
-
     data.amount =
       0;
-
 
     data.packageId =
       packageId;
 
-
     data.startDate =
       startDate;
-
 
     resultTitle =
       "🎫 KARNET AKTYWOWANY";
 
   }
 
-
   const result =
     await api(
       "recharge",
       data
     );
-
 
   if(!result.ok){
 
@@ -1805,7 +1634,6 @@ async function executeRecharge(){
 
   }
 
-
   const preview =
     await api(
       "preview",
@@ -1819,7 +1647,6 @@ async function executeRecharge(){
       }
     );
 
-
   if(
     result.type ===
     "KARNET"
@@ -1828,20 +1655,17 @@ async function executeRecharge(){
     resultTitle +=
       "<br>" +
       result.packageName +
-
       "<br>" +
       result.added +
       " wejść | " +
       result.price +
       " zł" +
-
       "<br>" +
       result.start +
       " → " +
       result.end;
 
   }
-
 
   showResult(
     "recharge",
@@ -1853,6 +1677,12 @@ async function executeRecharge(){
     result.before
   );
 
+  document
+    .getElementById(
+      "rechargeOptionsPanel"
+    )
+    .style.display =
+      "none";
 
   currentClientId = "";
 
@@ -1862,13 +1692,12 @@ async function executeRecharge(){
 
 
 /************************************************
- * POKAŻ NOWEGO UCZESTNIKA
+ * NOWY UCZESTNIK
  ************************************************/
 
 function showAddClient(){
 
   beep();
-
 
   document
     .getElementById(
@@ -1876,7 +1705,6 @@ function showAddClient(){
     )
     .style.display =
       "block";
-
 
   document
     .getElementById(
@@ -1886,10 +1714,6 @@ function showAddClient(){
 
 }
 
-
-/************************************************
- * ZAMKNIJ NOWEGO UCZESTNIKA
- ************************************************/
 
 function closeAddClient(){
 
@@ -1903,10 +1727,6 @@ function closeAddClient(){
 }
 
 
-/************************************************
- * ZAPIS NOWEGO UCZESTNIKA
- ************************************************/
-
 async function saveNewClient(){
 
   try{
@@ -1919,7 +1739,6 @@ async function saveNewClient(){
         .value
         .trim();
 
-
     const lastName =
       document
         .getElementById(
@@ -1927,7 +1746,6 @@ async function saveNewClient(){
         )
         .value
         .trim();
-
 
     const phone =
       document
@@ -1937,7 +1755,6 @@ async function saveNewClient(){
         .value
         .trim();
 
-
     const email =
       document
         .getElementById(
@@ -1946,14 +1763,12 @@ async function saveNewClient(){
         .value
         .trim();
 
-
     const newMode =
       document
         .getElementById(
           "newRechargeMode"
         )
         .value;
-
 
     if(firstName===""){
 
@@ -1965,7 +1780,6 @@ async function saveNewClient(){
 
     }
 
-
     if(lastName===""){
 
       alert(
@@ -1976,10 +1790,8 @@ async function saveNewClient(){
 
     }
 
-
     const emailRegex =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 
     if(
       email !== "" &&
@@ -1993,7 +1805,6 @@ async function saveNewClient(){
       return;
 
     }
-
 
     const data = {
 
@@ -2019,11 +1830,6 @@ async function saveNewClient(){
 
     };
 
-
-    /************************************************
-     * NOWY - INDYWIDUALNE
-     ************************************************/
-
     if(
       newMode ===
       "INDIVIDUAL"
@@ -2036,16 +1842,10 @@ async function saveNewClient(){
           )
           .value;
 
-
       data.rechargeMode =
         "INDIVIDUAL";
 
     }
-
-
-    /************************************************
-     * NOWY - KARNET
-     ************************************************/
 
     if(
       newMode ===
@@ -2059,14 +1859,12 @@ async function saveNewClient(){
           )
           .value;
 
-
       const startDate =
         document
           .getElementById(
             "newPassStartDate"
           )
           .value;
-
 
       if(!packageId){
 
@@ -2078,7 +1876,6 @@ async function saveNewClient(){
 
       }
 
-
       if(!startDate){
 
         alert(
@@ -2089,31 +1886,22 @@ async function saveNewClient(){
 
       }
 
-
       data.rechargeMode =
         "PASS";
 
-
       data.packageId =
         packageId;
-
 
       data.startDate =
         startDate;
 
     }
 
-
     const result =
       await api(
         "addClient",
         data
       );
-
-
-    /************************************************
-     * DUPLIKAT
-     ************************************************/
 
     if(
       result.duplicate
@@ -2128,11 +1916,6 @@ async function saveNewClient(){
 
     }
 
-
-    /************************************************
-     * BŁĄD
-     ************************************************/
-
     if(!result.ok){
 
       alert(
@@ -2143,16 +1926,10 @@ async function saveNewClient(){
 
     }
 
-
-    /************************************************
-     * POTWIERDZENIE
-     ************************************************/
-
     let message =
       "✅ Dodano uczestnika\n\n" +
       "ID: " +
       result.id;
-
 
     if(
       result.rechargeType ===
@@ -2162,19 +1939,15 @@ async function saveNewClient(){
       message +=
         "\n\nKarnet: " +
         result.packageId +
-
         "\nDodano: " +
         result.added +
         " wejść" +
-
         "\nStart: " +
         result.start +
-
         "\nWażny do: " +
         result.end;
 
     }
-
 
     if(
       result.rechargeType ===
@@ -2187,15 +1960,9 @@ async function saveNewClient(){
 
     }
 
-
     alert(
       message
     );
-
-
-    /************************************************
-     * RESET FORMULARZA
-     ************************************************/
 
     document
       .getElementById(
@@ -2204,14 +1971,12 @@ async function saveNewClient(){
       .value =
         "";
 
-
     document
       .getElementById(
         "newSurname"
       )
       .value =
         "";
-
 
     document
       .getElementById(
@@ -2220,14 +1985,12 @@ async function saveNewClient(){
       .value =
         "";
 
-
     document
       .getElementById(
         "newEmail"
       )
       .value =
         "";
-
 
     document
       .getElementById(
@@ -2236,9 +1999,7 @@ async function saveNewClient(){
       .value =
         "NONE";
 
-
     updateNewClientRechargeMode();
-
 
     closeAddClient();
 
@@ -2246,7 +2007,6 @@ async function saveNewClient(){
   catch(err){
 
     console.error(err);
-
 
     alert(
       "Błąd połączenia z serwerem.\n\n" +
