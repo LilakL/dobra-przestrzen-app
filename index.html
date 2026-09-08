@@ -74,6 +74,7 @@ select{
   font-weight:bold;
   font-size:22px;
 }
+
 .addClientBtn{
   background:#7c3aed;
   color:white;
@@ -90,6 +91,7 @@ select{
 .addClientBtn:active{
   transform:scale(.97);
 }
+
 .activeMode{
   box-shadow:0 0 0 4px rgba(0,0,0,.15);
   transform:scale(1.03);
@@ -126,6 +128,7 @@ select{
   font-size:36px;
   font-weight:bold;
 }
+
 /* ===== NOWY UCZESTNIK ===== */
 
 #addClientPanel{
@@ -172,6 +175,36 @@ select{
   border:none;
   font-weight:bold;
 }
+
+.optionGroup{
+  margin-top:10px;
+}
+
+.optionGroup label{
+  display:block;
+  margin-top:10px;
+  font-weight:bold;
+}
+
+.optionGroup input{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:17px;
+  box-sizing:border-box;
+}
+
+.passSummary{
+  margin-top:10px;
+  padding:12px;
+  border-radius:10px;
+  background:#f3f4f6;
+  font-size:15px;
+  line-height:1.5;
+}
+
 </style>
 </head>
 
@@ -186,6 +219,7 @@ select{
 </div>
 
 </div>
+
 
 <div class="card">
 
@@ -210,6 +244,7 @@ URUCHOM SKANER QR
 
 </div>
 
+
 <div
 id="clientBox"
 class="card">
@@ -225,6 +260,7 @@ id="clientRemain">
 
 </div>
 
+
 <div class="card modeCard">
 
 <button
@@ -236,6 +272,33 @@ onclick="executeCheckin()">
 
 </button>
 
+
+<div
+id="rechargeOptionsPanel"
+class="optionGroup"
+style="display:none;">
+
+<label>Rodzaj doładowania</label>
+
+<select
+id="rechargeMode"
+onchange="updateRechargeMode()">
+
+<option value="INDIVIDUAL">
+Indywidualne
+</option>
+
+<option value="PASS">
+Karnet
+</option>
+
+</select>
+
+
+<div id="individualRechargeBox">
+
+<label>Liczba wejść</label>
+
 <select id="rechargeAmount">
 
 <option value="1">+1</option>
@@ -243,23 +306,41 @@ onclick="executeCheckin()">
 <option value="3">+3</option>
 <option value="4">+4</option>
 <option value="5">+5</option>
-<option value="6">+6</option>
-<option value="7">+7</option>
-<option value="8">+8</option>
-<option value="9">+9</option>
-<option value="10">+10</option>
-<option value="11">+11</option>
-<option value="12">+12</option>
-<option value="13">+13</option>
-<option value="14">+14</option>
-<option value="15">+15</option>
-<option value="16">+16</option>
-<option value="17">+17</option>
-<option value="18">+18</option>
-<option value="19">+19</option>
-<option value="20">+20</option>
 
 </select>
+
+</div>
+
+
+<div
+id="passRechargeBox"
+style="display:none;">
+
+<label>Wybierz karnet</label>
+
+<select
+id="rechargePass"
+onchange="updateRechargePassSummary()">
+</select>
+
+
+<label>Start karnetu</label>
+
+<input
+id="rechargeStartDate"
+type="date"
+onchange="updateRechargePassSummary()">
+
+
+<div
+id="rechargePassSummary"
+class="passSummary">
+</div>
+
+</div>
+
+</div>
+
 
 <button
 id="rechargeBtn"
@@ -269,6 +350,7 @@ onclick="executeRecharge()">
 💳 DOŁADUJ
 
 </button>
+
 
 <button
 id="addClientBtn"
@@ -280,66 +362,106 @@ onclick="showAddClient()">
 </button>
 
 </div>
-  <div
+
+
+<div
 id="addClientPanel"
 class="card">
 
 <h3>👤 Nowy uczestnik</h3>
 
+
 <input
 id="newName"
 placeholder="Imię *">
+
 
 <input
 id="newSurname"
 placeholder="Nazwisko *">
 
+
 <input
 id="newPhone"
 placeholder="Telefon (opcjonalnie)">
+
 
 <input
 id="newEmail"
 placeholder="Email (opcjonalnie)">
 
-<label
-style="
-display:block;
-margin-top:18px;
-font-weight:bold;
-">
 
-🎫 Wejściówki na start
+<div class="optionGroup">
 
-</label>
+<label>🎫 Pakiet startowy</label>
+
+<select
+id="newRechargeMode"
+onchange="updateNewClientRechargeMode()">
+
+<option value="NONE">
+Bez doładowania
+</option>
+
+<option value="INDIVIDUAL">
+Doładowanie indywidualne
+</option>
+
+<option value="PASS">
+Karnet
+</option>
+
+</select>
+
+
+<div
+id="newIndividualBox"
+style="display:none;">
+
+<label>Liczba wejść</label>
 
 <select id="startPackage">
 
-<option value="0">0</option>
 <option value="1">+1</option>
 <option value="2">+2</option>
 <option value="3">+3</option>
 <option value="4">+4</option>
 <option value="5">+5</option>
-<option value="6">+6</option>
-<option value="7">+7</option>
-<option value="8">+8</option>
-<option value="9">+9</option>
-<option value="10">+10</option>
-<option value="11">+11</option>
-<option value="12">+12</option>
-<option value="13">+13</option>
-<option value="14">+14</option>
-<option value="15">+15</option>
-<option value="16">+16</option>
-<option value="17">+17</option>
-<option value="18">+18</option>
-<option value="19">+19</option>
-<option value="20">+20</option>
-<option value="21">+21</option>
-<option value="22">+22</option>
 
 </select>
+
+</div>
+
+
+<div
+id="newPassBox"
+style="display:none;">
+
+<label>Wybierz karnet</label>
+
+<select
+id="newPass"
+onchange="updateNewPassSummary()">
+</select>
+
+
+<label>Start karnetu</label>
+
+<input
+id="newPassStartDate"
+type="date"
+onchange="updateNewPassSummary()">
+
+
+<div
+id="newPassSummary"
+class="passSummary">
+</div>
+
+</div>
+
+</div>
+
 
 <div class="formButtons">
 
@@ -350,6 +472,7 @@ onclick="saveNewClient()">
 💾 ZAPISZ
 
 </button>
+
 
 <button
 class="cancelBtn"
@@ -362,6 +485,8 @@ ANULUJ
 </div>
 
 </div>
+
+
 <script>
 
 const TOKEN =
@@ -369,15 +494,39 @@ new URLSearchParams(
   window.location.search
 ).get("token") || "";
 
+
 const API_URL =
 "https://script.google.com/macros/s/AKfycbwtITjQlWNlWIikKiaZna_CQNwfpFQJ2NQ5VnK8MtAX3i_Af_EG54GdHSHw_hIfJZtSww/exec";
 
+
 let scanner = null;
+
 let lastScan = "";
+
 let lastScanTime = 0;
+
 let mode = "checkin";
+
 let currentClientId = "";
+
 let currentClient = null;
+
+let rechargeOptions = {
+  individual:[
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  passes:[]
+};
+
+
+/************************************************
+ * DŹWIĘK
+ ************************************************/
+
 function beep(){
 
   const ctx =
@@ -386,67 +535,118 @@ function beep(){
       window.webkitAudioContext
     )();
 
+
   const osc =
     ctx.createOscillator();
 
+
   osc.type = "sine";
+
   osc.frequency.value = 1000;
 
-  osc.connect(ctx.destination);
+
+  osc.connect(
+    ctx.destination
+  );
+
 
   osc.start();
 
+
   setTimeout(()=>{
+
     osc.stop();
+
   },150);
 
 }
-async function api(action,data={}){
+
+
+/************************************************
+ * API GET
+ ************************************************/
+
+async function api(
+  action,
+  data={}
+){
 
   const params =
     new URLSearchParams({
+
       action,
+
       ...data
+
     });
 
+
   const url =
-    API_URL + "?" + params.toString();
+    API_URL +
+    "?" +
+    params.toString();
+
 
   const response =
     await fetch(url);
 
+
   const txt =
     await response.text();
 
+
   return JSON.parse(txt);
+
 }
-async function apiPost(action,data={}){
+
+
+/************************************************
+ * API POST
+ ************************************************/
+
+async function apiPost(
+  action,
+  data={}
+){
 
   const response =
-    await fetch(API_URL,{
+    await fetch(
+      API_URL,
+      {
 
-      method:"POST",
+        method:"POST",
 
-      headers:{
-        "Content-Type":"application/json"
-      },
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
 
-      body:JSON.stringify({
+        body:
+          JSON.stringify({
 
-        action,
+            action,
 
-        ...data
+            ...data
 
-      })
+          })
 
-    });
+      }
+    );
+
 
   const txt =
     await response.text();
 
+
   return JSON.parse(txt);
 
 }
+
+
+/************************************************
+ * WYNIK OPERACJI
+ ************************************************/
+
 function showResult(
   type,
   title,
@@ -456,51 +656,93 @@ function showResult(
 ){
 
   const box =
-    document.getElementById("clientBox");
+    document.getElementById(
+      "clientBox"
+    );
 
-  box.className = "card";
 
-if(type==="checkin"){
+  box.className =
+    "card";
 
-  box.classList.add("resultOk");
 
-  beep();
+  if(type==="checkin"){
 
-  if(navigator.vibrate){
-    navigator.vibrate([200,100,200]);
+    box.classList.add(
+      "resultOk"
+    );
+
+
+    beep();
+
+
+    if(navigator.vibrate){
+
+      navigator.vibrate([
+        200,
+        100,
+        200
+      ]);
+
+    }
+
   }
 
-}
 
-if(type==="recharge"){
+  if(type==="recharge"){
 
-  box.classList.add("resultRecharge");
+    box.classList.add(
+      "resultRecharge"
+    );
 
-  beep();
 
-  if(navigator.vibrate){
-    navigator.vibrate([300,100,300]);
+    beep();
+
+
+    if(navigator.vibrate){
+
+      navigator.vibrate([
+        300,
+        100,
+        300
+      ]);
+
+    }
+
   }
 
-}
 
-if(type==="error"){
+  if(type==="error"){
 
-  box.classList.add("resultError");
+    box.classList.add(
+      "resultError"
+    );
 
-  if(navigator.vibrate){
-    navigator.vibrate([100,100,100,100]);
+
+    if(navigator.vibrate){
+
+      navigator.vibrate([
+        100,
+        100,
+        100,
+        100
+      ]);
+
+    }
+
   }
 
-}
+
+  document
+    .getElementById(
+      "clientName"
+    )
+    .innerHTML =
+      name || "";
 
 
-  document.getElementById(
-    "clientName"
-  ).innerHTML =
-    name || "";
+  let html =
+    title;
 
-  let html = title;
 
   if(before !== ""){
 
@@ -511,7 +753,8 @@ if(type==="error"){
       balance +
       "</b>";
 
-  }else{
+  }
+  else{
 
     html +=
       "<br><br>Aktualny stan: <b>" +
@@ -520,12 +763,18 @@ if(type==="error"){
 
   }
 
-  document.getElementById(
-    "clientRemain"
-  ).innerHTML = html;
+
+  document
+    .getElementById(
+      "clientRemain"
+    )
+    .innerHTML =
+      html;
+
 
   box.style.display =
     "block";
+
 
   setTimeout(()=>{
 
@@ -533,11 +782,17 @@ if(type==="error"){
       "none";
 
     lastScan = "";
+
     lastScanTime = 0;
 
   },3000);
 
 }
+
+
+/************************************************
+ * INICJALIZACJA
+ ************************************************/
 
 async function init(){
 
@@ -551,22 +806,31 @@ async function init(){
         }
       );
 
+
     document
-      .getElementById("operator")
+      .getElementById(
+        "operator"
+      )
       .innerHTML =
-      "Operator: <b>" +
-      operator.name +
-      "</b>";
+        "Operator: <b>" +
+        operator.name +
+        "</b>";
+
 
     const schedule =
-      await api("schedule");
+      await api(
+        "schedule"
+      );
+
 
     const sel =
       document.getElementById(
         "scheduleSelect"
       );
 
+
     sel.innerHTML = "";
+
 
     schedule.forEach(x=>{
 
@@ -575,12 +839,14 @@ async function init(){
           "option"
         );
 
+
       o.value =
         x.day +
         "|" +
         x.hour +
         "|" +
         x.className;
+
 
       o.textContent =
         x.day +
@@ -589,9 +855,25 @@ async function init(){
         " | " +
         x.className;
 
+
       sel.appendChild(o);
 
     });
+
+
+    rechargeOptions =
+      await api(
+        "rechargeOptions"
+      );
+
+
+    loadPassOptions();
+
+    setDefaultPassDates();
+
+    updateRechargeMode();
+
+    updateNewClientRechargeMode();
 
   }
   catch(err){
@@ -607,48 +889,518 @@ async function init(){
 
 }
 
+
+/************************************************
+ * ZAŁADOWANIE KARNETÓW
+ ************************************************/
+
+function loadPassOptions(){
+
+  const passes =
+    Array.isArray(
+      rechargeOptions.passes
+    )
+      ? rechargeOptions.passes
+      : [];
+
+
+  [
+    "rechargePass",
+    "newPass"
+  ].forEach(id=>{
+
+    const sel =
+      document.getElementById(id);
+
+
+    sel.innerHTML = "";
+
+
+    passes.forEach(pass=>{
+
+      const o =
+        document.createElement(
+          "option"
+        );
+
+
+      o.value =
+        pass.id;
+
+
+      o.textContent =
+        pass.group +
+        " | " +
+        pass.entries +
+        " wejść" +
+        " | " +
+        pass.price +
+        " zł";
+
+
+      sel.appendChild(o);
+
+    });
+
+  });
+
+
+  updateRechargePassSummary();
+
+  updateNewPassSummary();
+
+}
+
+
+/************************************************
+ * FORMAT DATY
+ ************************************************/
+
+function localDateInputValue(date){
+
+  const y =
+    date.getFullYear();
+
+
+  const m =
+    String(
+      date.getMonth()+1
+    )
+      .padStart(
+        2,
+        "0"
+      );
+
+
+  const d =
+    String(
+      date.getDate()
+    )
+      .padStart(
+        2,
+        "0"
+      );
+
+
+  return (
+    y +
+    "-" +
+    m +
+    "-" +
+    d
+  );
+
+}
+
+
+/************************************************
+ * DOMYŚLNA DATA STARTU
+ ************************************************/
+
+function setDefaultPassDates(){
+
+  const today =
+    localDateInputValue(
+      new Date()
+    );
+
+
+  document
+    .getElementById(
+      "rechargeStartDate"
+    )
+    .value =
+      today;
+
+
+  document
+    .getElementById(
+      "newPassStartDate"
+    )
+    .value =
+      today;
+
+}
+
+
+/************************************************
+ * KARNET PO ID
+ ************************************************/
+
+function getPassByIdClient(id){
+
+  return (
+    rechargeOptions.passes || []
+  )
+    .find(
+      x => x.id === id
+    ) || null;
+
+}
+
+
+/************************************************
+ * DATA KOŃCA KARNETU
+ ************************************************/
+
+function calculateEndDateText(
+  startText,
+  validityDays
+){
+
+  if(!startText){
+
+    return "";
+
+  }
+
+
+  const parts =
+    startText
+      .split("-")
+      .map(Number);
+
+
+  const d =
+    new Date(
+      parts[0],
+      parts[1]-1,
+      parts[2],
+      12,
+      0,
+      0
+    );
+
+
+  d.setDate(
+    d.getDate() +
+    Number(
+      validityDays || 30
+    )
+  );
+
+
+  return localDateInputValue(d);
+
+}
+
+
+/************************************************
+ * TRYB DOŁADOWANIA
+ ************************************************/
+
+function updateRechargeMode(){
+
+  const isPass =
+    document
+      .getElementById(
+        "rechargeMode"
+      )
+      .value === "PASS";
+
+
+  document
+    .getElementById(
+      "individualRechargeBox"
+    )
+    .style.display =
+      isPass
+        ? "none"
+        : "block";
+
+
+  document
+    .getElementById(
+      "passRechargeBox"
+    )
+    .style.display =
+      isPass
+        ? "block"
+        : "none";
+
+
+  if(isPass){
+
+    updateRechargePassSummary();
+
+  }
+
+}
+
+
+/************************************************
+ * PODSUMOWANIE KARNETU
+ ************************************************/
+
+function updateRechargePassSummary(){
+
+  const pass =
+    getPassByIdClient(
+      document
+        .getElementById(
+          "rechargePass"
+        )
+        .value
+    );
+
+
+  const start =
+    document
+      .getElementById(
+        "rechargeStartDate"
+      )
+      .value;
+
+
+  const box =
+    document.getElementById(
+      "rechargePassSummary"
+    );
+
+
+  if(!pass){
+
+    box.innerHTML =
+      "Brak dostępnych karnetów.";
+
+    return;
+
+  }
+
+
+  const end =
+    calculateEndDateText(
+      start,
+      pass.validityDays
+    );
+
+
+  box.innerHTML =
+    "<b>" +
+    pass.group +
+    " – " +
+    pass.name +
+    "</b><br>" +
+
+    "Wejścia: " +
+    pass.entries +
+    "<br>" +
+
+    "Cena: " +
+    pass.price +
+    " zł<br>" +
+
+    "Ważność: " +
+    pass.validityDays +
+    " dni<br>" +
+
+    "Ważny do: <b>" +
+    (
+      end ||
+      "wybierz datę startu"
+    ) +
+    "</b>";
+
+}
+
+
+/************************************************
+ * TRYB NOWEGO UCZESTNIKA
+ ************************************************/
+
+function updateNewClientRechargeMode(){
+
+  const mode =
+    document
+      .getElementById(
+        "newRechargeMode"
+      )
+      .value;
+
+
+  document
+    .getElementById(
+      "newIndividualBox"
+    )
+    .style.display =
+      mode === "INDIVIDUAL"
+        ? "block"
+        : "none";
+
+
+  document
+    .getElementById(
+      "newPassBox"
+    )
+    .style.display =
+      mode === "PASS"
+        ? "block"
+        : "none";
+
+
+  if(
+    mode === "PASS"
+  ){
+
+    updateNewPassSummary();
+
+  }
+
+}
+
+
+/************************************************
+ * PODSUMOWANIE NOWEGO KARNETU
+ ************************************************/
+
+function updateNewPassSummary(){
+
+  const pass =
+    getPassByIdClient(
+      document
+        .getElementById(
+          "newPass"
+        )
+        .value
+    );
+
+
+  const start =
+    document
+      .getElementById(
+        "newPassStartDate"
+      )
+      .value;
+
+
+  const box =
+    document.getElementById(
+      "newPassSummary"
+    );
+
+
+  if(!pass){
+
+    box.innerHTML =
+      "Brak dostępnych karnetów.";
+
+    return;
+
+  }
+
+
+  const end =
+    calculateEndDateText(
+      start,
+      pass.validityDays
+    );
+
+
+  box.innerHTML =
+    "<b>" +
+    pass.group +
+    " – " +
+    pass.name +
+    "</b><br>" +
+
+    "Wejścia: " +
+    pass.entries +
+    "<br>" +
+
+    "Cena: " +
+    pass.price +
+    " zł<br>" +
+
+    "Ważność: " +
+    pass.validityDays +
+    " dni<br>" +
+
+    "Ważny do: <b>" +
+    (
+      end ||
+      "wybierz datę startu"
+    ) +
+    "</b>";
+
+}
+
+
+/************************************************
+ * TRYB PANELU
+ ************************************************/
+
 function setMode(newMode){
 
-  mode = newMode;
+  mode =
+    newMode;
+
 
   document
-    .getElementById("checkinBtn")
-    .classList.remove("activeMode");
+    .getElementById(
+      "checkinBtn"
+    )
+    .classList.remove(
+      "activeMode"
+    );
+
 
   document
-    .getElementById("rechargeBtn")
-    .classList.remove("activeMode");
+    .getElementById(
+      "rechargeBtn"
+    )
+    .classList.remove(
+      "activeMode"
+    );
+
 
   if(mode==="checkin"){
 
     document
-      .getElementById("checkinBtn")
-      .classList.add("activeMode");
-
-  }else{
-
-    document
-      .getElementById("rechargeBtn")
-      .classList.add("activeMode");
+      .getElementById(
+        "checkinBtn"
+      )
+      .classList.add(
+        "activeMode"
+      );
 
   }
+  else{
+
+    document
+      .getElementById(
+        "rechargeBtn"
+      )
+      .classList.add(
+        "activeMode"
+      );
+
+  }
+
 
   document
     .getElementById(
-      "rechargeAmount"
+      "rechargeOptionsPanel"
     )
     .style.display =
-
-    mode==="recharge"
-      ? "block"
-      : "none";
+      mode==="recharge"
+        ? "block"
+        : "none";
 
 }
+
+
+/************************************************
+ * SKANER
+ ************************************************/
+
 function startScanner(){
 
   if(scanner){
+
     return;
+
   }
+
 
   scanner =
     new Html5QrcodeScanner(
@@ -659,6 +1411,7 @@ function startScanner(){
       }
     );
 
+
   scanner.render(
     onScanSuccess,
     ()=>{}
@@ -666,27 +1419,49 @@ function startScanner(){
 
 }
 
+
+/************************************************
+ * SKAN QR
+ ************************************************/
+
 async function onScanSuccess(text){
 
-  const now = Date.now();
+  const now =
+    Date.now();
+
 
   if(
     text === lastScan &&
-    (now-lastScanTime) < 5000
+    (
+      now -
+      lastScanTime
+    ) < 5000
   ){
+
     return;
+
   }
 
-  lastScan = text;
-  lastScanTime = now;
+
+  lastScan =
+    text;
+
+
+  lastScanTime =
+    now;
+
 
   try{
 
     const clientId =
       String(text)
         .split("|")[0]
-        .replace(/\s/g,"")
+        .replace(
+          /\s/g,
+          ""
+        )
         .trim();
+
 
     const preview =
       await api(
@@ -696,6 +1471,7 @@ async function onScanSuccess(text){
           clientId:clientId
         }
       );
+
 
     if(!preview.ok){
 
@@ -710,47 +1486,50 @@ async function onScanSuccess(text){
 
     }
 
+
     currentClientId =
       clientId;
 
+
     currentClient =
       preview;
+
 
     document
       .getElementById(
         "clientBox"
       )
       .className =
-      "card";
+        "card";
+
 
     document
       .getElementById(
         "clientBox"
       )
       .style.display =
-      "block";
+        "block";
+
 
     document
       .getElementById(
         "clientName"
       )
       .innerHTML =
+        preview.id +
+        "<br>" +
+        preview.name;
 
-      preview.id +
-      "<br>" +
-      preview.name;
 
     document
       .getElementById(
         "clientRemain"
       )
       .innerHTML =
-
-      "Aktualny stan: <b>" +
-      preview.remaining +
-      "</b><br><br>" +
-
-      "Wybierz operację:";
+        "Aktualny stan: <b>" +
+        preview.remaining +
+        "</b><br><br>" +
+        "Wybierz operację:";
 
   }
   catch(err){
@@ -765,6 +1544,12 @@ async function onScanSuccess(text){
   }
 
 }
+
+
+/************************************************
+ * CHECK-IN
+ ************************************************/
+
 async function executeCheckin(){
 
   if(!currentClientId){
@@ -777,25 +1562,41 @@ async function executeCheckin(){
     );
 
     return;
+
   }
+
 
   const selected =
     document
-      .getElementById("scheduleSelect")
+      .getElementById(
+        "scheduleSelect"
+      )
       .value
       .split("|");
+
 
   const result =
     await api(
       "checkin",
       {
+
         token:TOKEN,
-        clientId:currentClientId,
-        day:selected[0],
-        hour:selected[1],
-        className:selected[2]
+
+        clientId:
+          currentClientId,
+
+        day:
+          selected[0],
+
+        hour:
+          selected[1],
+
+        className:
+          selected[2]
+
       }
     );
+
 
   if(!result.ok){
 
@@ -807,28 +1608,45 @@ async function executeCheckin(){
     );
 
     return;
+
   }
+
 
   const preview =
     await api(
       "preview",
       {
+
         token:TOKEN,
-        clientId:currentClientId
+
+        clientId:
+          currentClientId
+
       }
     );
+
 
   showResult(
     "checkin",
     "✅ CHECK-IN OK",
-    preview.id + "<br>" + preview.name,
+    preview.id +
+      "<br>" +
+      preview.name,
     preview.remaining,
     result.before
   );
 
+
   currentClientId = "";
+
   currentClient = null;
+
 }
+
+
+/************************************************
+ * DOŁADOWANIE
+ ************************************************/
 
 async function executeRecharge(){
 
@@ -842,24 +1660,137 @@ async function executeRecharge(){
     );
 
     return;
+
   }
 
-  const amount =
+
+  const rechargeMode =
     document
       .getElementById(
-        "rechargeAmount"
+        "rechargeMode"
       )
       .value;
+
+
+  const data = {
+
+    token:
+      TOKEN,
+
+    clientId:
+      currentClientId,
+
+    mode:
+      rechargeMode
+
+  };
+
+
+  let resultTitle = "";
+
+
+  /************************************************
+   * INDYWIDUALNE
+   ************************************************/
+
+  if(
+    rechargeMode ===
+    "INDIVIDUAL"
+  ){
+
+    const amount =
+      document
+        .getElementById(
+          "rechargeAmount"
+        )
+        .value;
+
+
+    data.amount =
+      amount;
+
+
+    resultTitle =
+      "➕ DOŁADOWANO +" +
+      amount;
+
+  }
+
+
+  /************************************************
+   * KARNET
+   ************************************************/
+
+  else{
+
+    const packageId =
+      document
+        .getElementById(
+          "rechargePass"
+        )
+        .value;
+
+
+    const startDate =
+      document
+        .getElementById(
+          "rechargeStartDate"
+        )
+        .value;
+
+
+    if(!packageId){
+
+      showResult(
+        "error",
+        "Wybierz karnet",
+        "",
+        "-"
+      );
+
+      return;
+
+    }
+
+
+    if(!startDate){
+
+      showResult(
+        "error",
+        "Wybierz datę startu karnetu",
+        "",
+        "-"
+      );
+
+      return;
+
+    }
+
+
+    data.amount =
+      0;
+
+
+    data.packageId =
+      packageId;
+
+
+    data.startDate =
+      startDate;
+
+
+    resultTitle =
+      "🎫 KARNET AKTYWOWANY";
+
+  }
+
 
   const result =
     await api(
       "recharge",
-      {
-        token:TOKEN,
-        clientId:currentClientId,
-        amount:amount
-      }
+      data
     );
+
 
   if(!result.ok){
 
@@ -871,132 +1802,443 @@ async function executeRecharge(){
     );
 
     return;
+
   }
+
 
   const preview =
     await api(
       "preview",
       {
+
         token:TOKEN,
-        clientId:currentClientId
+
+        clientId:
+          currentClientId
+
       }
     );
 
+
+  if(
+    result.type ===
+    "KARNET"
+  ){
+
+    resultTitle +=
+      "<br>" +
+      result.packageName +
+
+      "<br>" +
+      result.added +
+      " wejść | " +
+      result.price +
+      " zł" +
+
+      "<br>" +
+      result.start +
+      " → " +
+      result.end;
+
+  }
+
+
   showResult(
     "recharge",
-    "➕ DOŁADOWANO +" + amount,
-    preview.id + "<br>" + preview.name,
+    resultTitle,
+    preview.id +
+      "<br>" +
+      preview.name,
     preview.remaining,
     result.before
   );
 
+
   currentClientId = "";
+
   currentClient = null;
+
 }
+
+
+/************************************************
+ * POKAŻ NOWEGO UCZESTNIKA
+ ************************************************/
 
 function showAddClient(){
 
-    beep();
+  beep();
 
-    document
-      .getElementById("addClientPanel")
-      .style.display="block";
 
-    document
-      .getElementById("newName")
-      .focus();
+  document
+    .getElementById(
+      "addClientPanel"
+    )
+    .style.display =
+      "block";
+
+
+  document
+    .getElementById(
+      "newName"
+    )
+    .focus();
 
 }
+
+
+/************************************************
+ * ZAMKNIJ NOWEGO UCZESTNIKA
+ ************************************************/
 
 function closeAddClient(){
 
-    document
-      .getElementById("addClientPanel")
-      .style.display="none";
+  document
+    .getElementById(
+      "addClientPanel"
+    )
+    .style.display =
+      "none";
 
 }
+
+
+/************************************************
+ * ZAPIS NOWEGO UCZESTNIKA
+ ************************************************/
+
 async function saveNewClient(){
 
   try{
 
-    const firstName=document.getElementById("newName").value.trim();
-    const lastName=document.getElementById("newSurname").value.trim();
-    const phone=document.getElementById("newPhone").value.trim();
-    const email=document.getElementById("newEmail").value.trim();
-const startPackage =
-  document.getElementById("startPackage").value;
+    const firstName =
+      document
+        .getElementById(
+          "newName"
+        )
+        .value
+        .trim();
+
+
+    const lastName =
+      document
+        .getElementById(
+          "newSurname"
+        )
+        .value
+        .trim();
+
+
+    const phone =
+      document
+        .getElementById(
+          "newPhone"
+        )
+        .value
+        .trim();
+
+
+    const email =
+      document
+        .getElementById(
+          "newEmail"
+        )
+        .value
+        .trim();
+
+
+    const newMode =
+      document
+        .getElementById(
+          "newRechargeMode"
+        )
+        .value;
+
+
     if(firstName===""){
-      alert("Podaj imię.");
-      return;
-    }
 
-    if(lastName===""){
-      alert("Podaj nazwisko.");
-      return;
-    }
-
-    const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if(email!=="" && !emailRegex.test(email)){
-      alert("Niepoprawny adres e-mail.");
-      return;
-    }
-
-let result=await api(
-  "addClient",
-  {
-      token:TOKEN,
-      firstName,
-      lastName,
-      phone,
-      email,
-      startPackage,
-      forceCreate:false
-  }
-);
-
-    if(result.duplicate){
-
-      const force=confirm(
-        "Uczestnik już istnieje:\n\n"+
-        result.name+
-        "\n"+
-        result.id+
-        "\n\nDodać mimo to?"
+      alert(
+        "Podaj imię."
       );
 
-      if(!force){
+      return;
+
+    }
+
+
+    if(lastName===""){
+
+      alert(
+        "Podaj nazwisko."
+      );
+
+      return;
+
+    }
+
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
+    if(
+      email !== "" &&
+      !emailRegex.test(email)
+    ){
+
+      alert(
+        "Niepoprawny adres e-mail."
+      );
+
+      return;
+
+    }
+
+
+    const data = {
+
+      token:
+        TOKEN,
+
+      firstName,
+
+      lastName,
+
+      phone,
+
+      email,
+
+      startPackage:
+        0,
+
+      forceCreate:
+        false,
+
+      rechargeMode:
+        "INDIVIDUAL"
+
+    };
+
+
+    /************************************************
+     * NOWY - INDYWIDUALNE
+     ************************************************/
+
+    if(
+      newMode ===
+      "INDIVIDUAL"
+    ){
+
+      data.startPackage =
+        document
+          .getElementById(
+            "startPackage"
+          )
+          .value;
+
+
+      data.rechargeMode =
+        "INDIVIDUAL";
+
+    }
+
+
+    /************************************************
+     * NOWY - KARNET
+     ************************************************/
+
+    if(
+      newMode ===
+      "PASS"
+    ){
+
+      const packageId =
+        document
+          .getElementById(
+            "newPass"
+          )
+          .value;
+
+
+      const startDate =
+        document
+          .getElementById(
+            "newPassStartDate"
+          )
+          .value;
+
+
+      if(!packageId){
+
+        alert(
+          "Wybierz karnet."
+        );
+
         return;
+
       }
 
-result=await api(
-  "addClient",
-  {
-      token:TOKEN,
-      firstName,
-      lastName,
-      phone,
-      email,
-      startPackage,
-      forceCreate:true
-  }
-);
+
+      if(!startDate){
+
+        alert(
+          "Wybierz datę startu karnetu."
+        );
+
+        return;
+
+      }
+
+
+      data.rechargeMode =
+        "PASS";
+
+
+      data.packageId =
+        packageId;
+
+
+      data.startDate =
+        startDate;
 
     }
+
+
+    const result =
+      await api(
+        "addClient",
+        data
+      );
+
+
+    /************************************************
+     * DUPLIKAT
+     ************************************************/
+
+    if(
+      result.duplicate
+    ){
+
+      alert(
+        result.msg ||
+        "Uczestnik już istnieje."
+      );
+
+      return;
+
+    }
+
+
+    /************************************************
+     * BŁĄD
+     ************************************************/
 
     if(!result.ok){
-      alert(result.msg);
+
+      alert(
+        result.msg
+      );
+
       return;
+
     }
 
+
+    /************************************************
+     * POTWIERDZENIE
+     ************************************************/
+
+    let message =
+      "✅ Dodano uczestnika\n\n" +
+      "ID: " +
+      result.id;
+
+
+    if(
+      result.rechargeType ===
+      "KARNET"
+    ){
+
+      message +=
+        "\n\nKarnet: " +
+        result.packageId +
+
+        "\nDodano: " +
+        result.added +
+        " wejść" +
+
+        "\nStart: " +
+        result.start +
+
+        "\nWażny do: " +
+        result.end;
+
+    }
+
+
+    if(
+      result.rechargeType ===
+      "INDYWIDUALNE"
+    ){
+
+      message +=
+        "\n\nDoładowanie: +" +
+        result.added;
+
+    }
+
+
     alert(
-      "✅ Dodano uczestnika\n\nID: "+result.id
+      message
     );
 
-    document.getElementById("newName").value="";
-    document.getElementById("newSurname").value="";
-    document.getElementById("newPhone").value="";
-    document.getElementById("newEmail").value="";
+
+    /************************************************
+     * RESET FORMULARZA
+     ************************************************/
+
+    document
+      .getElementById(
+        "newName"
+      )
+      .value =
+        "";
+
+
+    document
+      .getElementById(
+        "newSurname"
+      )
+      .value =
+        "";
+
+
+    document
+      .getElementById(
+        "newPhone"
+      )
+      .value =
+        "";
+
+
+    document
+      .getElementById(
+        "newEmail"
+      )
+      .value =
+        "";
+
+
+    document
+      .getElementById(
+        "newRechargeMode"
+      )
+      .value =
+        "NONE";
+
+
+    updateNewClientRechargeMode();
+
 
     closeAddClient();
 
@@ -1005,8 +2247,9 @@ result=await api(
 
     console.error(err);
 
+
     alert(
-      "Błąd połączenia z serwerem.\n\n"+
+      "Błąd połączenia z serwerem.\n\n" +
       err.message
     );
 
@@ -1014,7 +2257,9 @@ result=await api(
 
 }
 
-window.onload = init;
+
+window.onload =
+  init;
 
 </script>
 
