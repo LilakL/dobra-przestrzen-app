@@ -534,6 +534,12 @@ let currentClientId = "";
 
 let currentClient = null;
 
+/*
+ * Chroni przed równoległym uruchomieniem kilku podglądów,
+ * ale NIE blokuje przejścia na inny kod QR.
+ */
+let scanRequestInProgress = false;
+
 let rechargeOptions = {
   individual:[
     1,
@@ -1291,19 +1297,59 @@ function startScanner(){
 
 async function onScanSuccess(text){
 
-  /*
-   * WAŻNE:
-   * jeżeli klient jest już wybrany,
-   * nie pozwalamy skanerowi ponownie
-   * odczytać kodu i zresetować formularza.
-   */
-  if(currentClientId){
-    return;
-  }
-
   const now =
     Date.now();
 
+
+  /*
+   * Najpierw rozpoznajemy ID z odczytanego QR.
+   * Dzięki temu możemy odróżnić:
+   * - ponowny odczyt TEGO SAMEGO klienta,
+   * - odczyt INNEGO klienta.
+   */
+  const clientId =
+    String(text || "")
+      .split("|")[0]
+      .replace(
+        /\s/g,
+        ""
+      )
+      .trim();
+
+
+  if(!clientId){
+    return;
+  }
+
+
+  /*
+   * Jeżeli trwa już zapytanie preview, nie uruchamiamy
+   * drugiego równolegle.
+   */
+  if(scanRequestInProgress){
+    return;
+  }
+
+
+  /*
+   * Ten sam klient pozostający przed kamerą:
+   * ignorujemy kolejny odczyt.
+   *
+   * Inny klient:
+   * może zostać odczytany od razu.
+   */
+  if(
+    currentClientId &&
+    clientId === currentClientId
+  ){
+    return;
+  }
+
+
+  /*
+   * Dodatkowa blokada wielokrotnego
+   * odczytu dokładnie tego samego QR.
+   */
   if(
     text === lastScan &&
     (
@@ -1311,10 +1357,9 @@ async function onScanSuccess(text){
       lastScanTime
     ) < 5000
   ){
-
     return;
-
   }
+
 
   lastScan =
     text;
@@ -1322,16 +1367,11 @@ async function onScanSuccess(text){
   lastScanTime =
     now;
 
-  try{
+  scanRequestInProgress =
+    true;
 
-    const clientId =
-      String(text)
-        .split("|")[0]
-        .replace(
-          /\s/g,
-          ""
-        )
-        .trim();
+
+  try{
 
     const preview =
       await api(
@@ -1341,6 +1381,7 @@ async function onScanSuccess(text){
           clientId:clientId
         }
       );
+
 
     if(!preview.ok){
 
@@ -1355,11 +1396,17 @@ async function onScanSuccess(text){
 
     }
 
+
+    /*
+     * Dopiero po poprawnym preview ustawiamy
+     * nowego aktywnego klienta.
+     */
     currentClientId =
       clientId;
 
     currentClient =
       preview;
+
 
     document
       .getElementById(
@@ -1368,12 +1415,14 @@ async function onScanSuccess(text){
       .className =
         "card";
 
+
     document
       .getElementById(
         "clientBox"
       )
       .style.display =
         "block";
+
 
     document
       .getElementById(
@@ -1383,6 +1432,7 @@ async function onScanSuccess(text){
         preview.id +
         "<br>" +
         preview.name;
+
 
     document
       .getElementById(
@@ -1394,6 +1444,12 @@ async function onScanSuccess(text){
         "</b><br><br>" +
         "Wybierz operację:";
 
+
+    /*
+     * Jak wcześniej:
+     * przy przejściu na nowego klienta
+     * chowamy otwarty panel doładowania.
+     */
     document
       .getElementById(
         "rechargeOptionsPanel"
@@ -1410,6 +1466,12 @@ async function onScanSuccess(text){
       "",
       err.message
     );
+
+  }
+  finally{
+
+    scanRequestInProgress =
+      false;
 
   }
 
