@@ -1300,7 +1300,6 @@ async function onScanSuccess(text){
   const now =
     Date.now();
 
-
   /*
    * Najpierw rozpoznajemy ID z odczytanego QR.
    * Dzięki temu możemy odróżnić:
@@ -1316,11 +1315,9 @@ async function onScanSuccess(text){
       )
       .trim();
 
-
   if(!clientId){
     return;
   }
-
 
   /*
    * Jeżeli trwa już zapytanie preview, nie uruchamiamy
@@ -1329,7 +1326,6 @@ async function onScanSuccess(text){
   if(scanRequestInProgress){
     return;
   }
-
 
   /*
    * Ten sam klient pozostający przed kamerą:
@@ -1345,7 +1341,6 @@ async function onScanSuccess(text){
     return;
   }
 
-
   /*
    * Dodatkowa blokada wielokrotnego
    * odczytu dokładnie tego samego QR.
@@ -1360,7 +1355,6 @@ async function onScanSuccess(text){
     return;
   }
 
-
   lastScan =
     text;
 
@@ -1369,7 +1363,6 @@ async function onScanSuccess(text){
 
   scanRequestInProgress =
     true;
-
 
   try{
 
@@ -1381,7 +1374,6 @@ async function onScanSuccess(text){
           clientId:clientId
         }
       );
-
 
     if(!preview.ok){
 
@@ -1396,7 +1388,6 @@ async function onScanSuccess(text){
 
     }
 
-
     /*
      * Dopiero po poprawnym preview ustawiamy
      * nowego aktywnego klienta.
@@ -1407,7 +1398,6 @@ async function onScanSuccess(text){
     currentClient =
       preview;
 
-
     document
       .getElementById(
         "clientBox"
@@ -1415,14 +1405,12 @@ async function onScanSuccess(text){
       .className =
         "card";
 
-
     document
       .getElementById(
         "clientBox"
       )
       .style.display =
         "block";
-
 
     document
       .getElementById(
@@ -1433,7 +1421,6 @@ async function onScanSuccess(text){
         "<br>" +
         preview.name;
 
-
     document
       .getElementById(
         "clientRemain"
@@ -1443,7 +1430,6 @@ async function onScanSuccess(text){
         preview.remaining +
         "</b><br><br>" +
         "Wybierz operację:";
-
 
     /*
      * Jak wcześniej:
@@ -1540,26 +1526,21 @@ async function executeCheckin(){
 
   }
 
-  const preview =
-    await api(
-      "preview",
-      {
-
-        token:TOKEN,
-
-        clientId:
-          currentClientId
-
-      }
-    );
+  /*
+   * FAST:
+   * Api.gs zwraca już:
+   * id, name, before, after.
+   *
+   * NIE wykonujemy drugiego api("preview").
+   */
 
   showResult(
     "checkin",
     "✅ CHECK-IN OK",
-    preview.id +
+    result.id +
       "<br>" +
-      preview.name,
-    preview.remaining,
+      result.name,
+    result.after,
     result.before
   );
 
@@ -1706,18 +1687,13 @@ async function executeRecharge(){
 
   }
 
-  const preview =
-    await api(
-      "preview",
-      {
-
-        token:TOKEN,
-
-        clientId:
-          currentClientId
-
-      }
-    );
+  /*
+   * FAST:
+   * Api.gs zwraca już:
+   * id, name, before, after.
+   *
+   * NIE wykonujemy drugiego api("preview").
+   */
 
   if(
     result.type ===
@@ -1742,10 +1718,10 @@ async function executeRecharge(){
   showResult(
     "recharge",
     resultTitle,
-    preview.id +
+    result.id +
       "<br>" +
-      preview.name,
-    preview.remaining,
+      result.name,
+    result.after,
     result.before
   );
 
