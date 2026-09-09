@@ -742,20 +742,36 @@ function showResult(
 
 
 /************************************************
- * INICJALIZACJA
+ * INICJALIZACJA - RÓWNOLEGŁA
  ************************************************/
 
 async function init(){
 
   try{
 
-    const operator =
-      await api(
+    const [
+      operator,
+      schedule,
+      rechargeData
+    ] = await Promise.all([
+
+      api(
         "operator",
         {
           token:TOKEN
         }
-      );
+      ),
+
+      api(
+        "schedule"
+      ),
+
+      api(
+        "rechargeOptions"
+      )
+
+    ]);
+
 
     document
       .getElementById(
@@ -766,11 +782,6 @@ async function init(){
         operator.name +
         "</b>";
 
-
-    const schedule =
-      await api(
-        "schedule"
-      );
 
     const sel =
       document.getElementById(
@@ -806,9 +817,7 @@ async function init(){
 
 
     rechargeOptions =
-      await api(
-        "rechargeOptions"
-      );
+      rechargeData;
 
     loadPassOptions();
 
