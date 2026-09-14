@@ -544,13 +544,100 @@ function todayString() {
 
 
 /************************************************
- * API GET
+ * API
+ *
+ * ODCZYTY:
+ * - GET
+ *
+ * ZAPISY:
+ * - POST
+ *
+ * Dodatkowo:
+ * - wyłączony cache
+ * - timestamp dla odczytów GET
  ************************************************/
 
 async function api(
   action,
   parameters = {}
 ) {
+
+  const writeActions =
+    new Set([
+      "bookingCreate",
+      "bookingCancel"
+    ]);
+
+
+  /**********************************************
+   * OPERACJE ZAPISUJĄCE — POST
+   **********************************************/
+
+  if (
+    writeActions.has(
+      action
+    )
+  ) {
+
+    const payload = {
+
+      action:
+        action,
+
+      token:
+        token,
+
+      ...parameters
+
+    };
+
+
+    const response =
+      await fetch(
+        API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "text/plain;charset=utf-8"
+
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            ),
+
+          cache:
+            "no-store"
+
+        }
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        "Błąd komunikacji z serwerem."
+      );
+
+    }
+
+
+    return await response.json();
+
+  }
+
+
+  /**********************************************
+   * OPERACJE ODCZYTUJĄCE — GET
+   **********************************************/
 
   const url =
     new URL(
@@ -592,9 +679,25 @@ async function api(
   );
 
 
+  /**********************************************
+   * CACHE BUSTER
+   **********************************************/
+
+  url.searchParams.set(
+    "_ts",
+    Date.now()
+  );
+
+
   const response =
     await fetch(
-      url.toString()
+      url.toString(),
+      {
+
+        cache:
+          "no-store"
+
+      }
     );
 
 
@@ -840,18 +943,10 @@ function renderSchedule(
     );
 
 
-  /************************************************
-   * EVENTY
-   ************************************************/
-
   renderEvents(
     events
   );
 
-
-  /************************************************
-   * ZAJĘCIA
-   ************************************************/
 
   renderClasses(
     classes
