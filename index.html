@@ -330,8 +330,6 @@ Karnet
 <option value="1">+1</option>
 <option value="2">+2</option>
 <option value="3">+3</option>
-<option value="4">+4</option>
-<option value="5">+5</option>
 
 </select>
 
@@ -450,8 +448,6 @@ style="display:none;">
 <option value="1">+1</option>
 <option value="2">+2</option>
 <option value="3">+3</option>
-<option value="4">+4</option>
-<option value="5">+5</option>
 
 </select>
 
@@ -544,9 +540,7 @@ let rechargeOptions = {
   individual:[
     1,
     2,
-    3,
-    4,
-    5
+    3
   ],
   passes:[]
 };
@@ -587,7 +581,17 @@ function beep(){
 
 
 /************************************************
- * API GET
+ * API
+ *
+ * ODCZYTY:
+ * - GET
+ *
+ * ZAPISY:
+ * - POST
+ *
+ * Dodatkowo:
+ * - wyłączony cache
+ * - walidacja odpowiedzi JSON
  ************************************************/
 
 async function api(
@@ -595,27 +599,178 @@ async function api(
   data={}
 ){
 
-  const params =
-    new URLSearchParams({
+  const writeActions =
+    new Set([
+      "checkin",
+      "recharge",
+      "addClient"
+    ]);
+
+
+  let response;
+
+
+  /**********************************************
+   * OPERACJE ZAPISUJĄCE — POST
+   **********************************************/
+
+  if(
+    writeActions.has(
+      action
+    )
+  ){
+
+    const payload = {
 
       action,
 
       ...data
 
-    });
+    };
 
-  const url =
-    API_URL +
-    "?" +
-    params.toString();
 
-  const response =
-    await fetch(url);
+    response =
+      await fetch(
+        API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers:{
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+
+          body:
+            JSON.stringify(
+              payload
+            ),
+
+          cache:
+            "no-store"
+
+        }
+      );
+
+  }
+
+
+  /**********************************************
+   * OPERACJE ODCZYTUJĄCE — GET
+   **********************************************/
+
+  else{
+
+    const params =
+      new URLSearchParams({
+
+        action,
+
+        ...data,
+
+        _ts:
+          Date.now()
+
+      });
+
+
+    const url =
+      API_URL +
+      "?" +
+      params.toString();
+
+
+    response =
+      await fetch(
+        url,
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+  }
+
+
+  /**********************************************
+   * STATUS HTTP
+   **********************************************/
+
+  if(
+    !response.ok
+  ){
+
+    throw new Error(
+      "API " +
+      action +
+      ": HTTP " +
+      response.status
+    );
+
+  }
+
+
+  /**********************************************
+   * ODCZYT ODPOWIEDZI
+   **********************************************/
 
   const txt =
     await response.text();
 
-  return JSON.parse(txt);
+
+  const trimmed =
+    String(
+      txt || ""
+    ).trim();
+
+
+  if(
+    !trimmed
+  ){
+
+    throw new Error(
+      "API " +
+      action +
+      ": pusta odpowiedź serwera."
+    );
+
+  }
+
+
+  /**********************************************
+   * HTML ZAMIAST JSON
+   **********************************************/
+
+  if(
+    trimmed.startsWith("<")
+  ){
+
+    throw new Error(
+      "API " +
+      action +
+      ": serwer zwrócił HTML zamiast JSON."
+    );
+
+  }
+
+
+  try{
+
+    return JSON.parse(
+      trimmed
+    );
+
+  }
+  catch(err){
+
+    throw new Error(
+      "API " +
+      action +
+      ": nieprawidłowa odpowiedź JSON."
+    );
+
+  }
 
 }
 
@@ -1309,12 +1464,6 @@ async function onScanSuccess(text){
   const now =
     Date.now();
 
-  /*
-   * Najpierw rozpoznajemy ID z odczytanego QR.
-   * Dzięki temu możemy odróżnić:
-   * - ponowny odczyt TEGO SAMEGO klienta,
-   * - odczyt INNEGO klienta.
-   */
   const clientId =
     String(text || "")
       .split("|")[0]
@@ -1328,21 +1477,10 @@ async function onScanSuccess(text){
     return;
   }
 
-  /*
-   * Jeżeli trwa już zapytanie preview, nie uruchamiamy
-   * drugiego równolegle.
-   */
   if(scanRequestInProgress){
     return;
   }
 
-  /*
-   * Ten sam klient pozostający przed kamerą:
-   * ignorujemy kolejny odczyt.
-   *
-   * Inny klient:
-   * może zostać odczytany od razu.
-   */
   if(
     currentClientId &&
     clientId === currentClientId
@@ -1350,10 +1488,6 @@ async function onScanSuccess(text){
     return;
   }
 
-  /*
-   * Dodatkowa blokada wielokrotnego
-   * odczytu dokładnie tego samego QR.
-   */
   if(
     text === lastScan &&
     (
@@ -1397,10 +1531,6 @@ async function onScanSuccess(text){
 
     }
 
-    /*
-     * Dopiero po poprawnym preview ustawiamy
-     * nowego aktywnego klienta.
-     */
     currentClientId =
       clientId;
 
@@ -1440,11 +1570,6 @@ async function onScanSuccess(text){
         "</b><br><br>" +
         "Wybierz operację:";
 
-    /*
-     * Jak wcześniej:
-     * przy przejściu na nowego klienta
-     * chowamy otwarty panel doładowania.
-     */
     document
       .getElementById(
         "rechargeOptionsPanel"
@@ -1534,14 +1659,6 @@ async function executeCheckin(){
     return;
 
   }
-
-  /*
-   * FAST:
-   * Api.gs zwraca już:
-   * id, name, before, after.
-   *
-   * NIE wykonujemy drugiego api("preview").
-   */
 
   showResult(
     "checkin",
@@ -1696,14 +1813,6 @@ async function executeRecharge(){
 
   }
 
-  /*
-   * FAST:
-   * Api.gs zwraca już:
-   * id, name, before, after.
-   *
-   * NIE wykonujemy drugiego api("preview").
-   */
-
   if(
     result.type ===
     "KARNET"
@@ -1741,10 +1850,6 @@ async function executeRecharge(){
     .style.display =
       "none";
 
-  /*
-   * Dopiero po zakończeniu doładowania
-   * odblokowujemy możliwość kolejnego skanu.
-   */
   currentClientId = "";
 
   currentClient = null;
