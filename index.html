@@ -629,9 +629,27 @@ async function api(
     };
 
 
+    /*
+     * Akcja jest przekazywana również w URL.
+     * Jest to zabezpieczenie dla mobilnych
+     * przeglądarek / przekierowań Apps Script.
+     *
+     * Payload JSON pozostaje bez zmian.
+     */
+
+    const postUrl =
+      API_URL +
+      "?action=" +
+      encodeURIComponent(
+        action
+      ) +
+      "&_ts=" +
+      Date.now();
+
+
     response =
       await fetch(
-        API_URL,
+        postUrl,
         {
 
           method:
@@ -854,6 +872,7 @@ function showResult(
 
   }
 
+
   document
     .getElementById(
       "clientName"
@@ -1049,9 +1068,7 @@ function loadPassOptions(){
   updateNewPassSummary();
 
 }
-
-
-/************************************************
+  /************************************************
  * DATA
  ************************************************/
 
@@ -1855,9 +1872,7 @@ async function executeRecharge(){
   currentClient = null;
 
 }
-
-
-/************************************************
+  /************************************************
  * NOWY UCZESTNIK
  ************************************************/
 
