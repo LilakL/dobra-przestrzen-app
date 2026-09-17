@@ -1104,6 +1104,19 @@ function showClientStatus(
     );
 
 
+  const validFrom =
+    statusValue(
+      status,
+      [
+        "validFrom",
+        "start",
+        "validStart",
+        "startDate"
+      ],
+      ""
+    );
+
+
   const validTo =
     statusValue(
       status,
@@ -1167,14 +1180,28 @@ function showClientStatus(
       lastRecharge,
       [
         "type",
-        "rechargeType",
+        "rechargeType"
+      ],
+      statusValue(
+        status,
+        [
+          "lastRechargeType"
+        ],
+        ""
+      )
+    );
+
+
+  const lastName =
+    statusValue(
+      lastRecharge,
+      [
         "name",
         "packageName"
       ],
       statusValue(
         status,
         [
-          "lastRechargeType",
           "lastRechargeName"
         ],
         ""
@@ -1207,37 +1234,91 @@ function showClientStatus(
       : Number(lastAmountRaw);
 
 
-  const entryWord =
-    balance === 1
-      ? "wejście"
-      : (
-          balance >= 2 &&
-          balance <= 4
-            ? "wejścia"
-            : "wejść"
-        );
+  function entryWord(value) {
+
+    const n =
+      Math.abs(
+        Number(value) || 0
+      );
+
+    const lastTwo =
+      n % 100;
+
+    const lastDigit =
+      n % 10;
+
+    if (n === 1) {
+      return "wejście";
+    }
+
+    if (
+      lastDigit >= 2 &&
+      lastDigit <= 4 &&
+      !(
+        lastTwo >= 12 &&
+        lastTwo <= 14
+      )
+    ) {
+      return "wejścia";
+    }
+
+    return "wejść";
+
+  }
 
 
   let validityText =
     "";
 
-  if (validTo) {
+  if (balance <= 0) {
 
     validityText =
-      "Ważne do " +
+      "Brak dostępnych wejść";
+
+  }
+  else if (
+    validFrom &&
+    validTo
+  ) {
+
+    validityText =
+      "Ważny " +
+      formatStatusDate(validFrom) +
+      " – " +
+      formatStatusDate(validTo);
+
+  }
+  else if (validTo) {
+
+    validityText =
+      "Ważny do " +
       formatStatusDate(validTo);
 
   }
 
+
   if (
+    balance > 0 &&
     daysRemaining !== "" &&
     !isNaN(daysRemaining)
   ) {
 
-    const dayWord =
-      daysRemaining === 1
-        ? "dzień"
-        : "dni";
+    let daysText = "";
+
+    if (daysRemaining === 0) {
+      daysText =
+        "ostatni dzień ważności";
+    }
+    else if (daysRemaining === 1) {
+      daysText =
+        "został Ci jeszcze 1 dzień";
+    }
+    else {
+      daysText =
+        "zostało Ci jeszcze " +
+        daysRemaining +
+        " dni";
+    }
 
     validityText +=
       (
@@ -1245,10 +1326,7 @@ function showClientStatus(
           ? " · "
           : ""
       ) +
-      "zostało " +
-      daysRemaining +
-      " " +
-      dayWord;
+      daysText;
 
   }
 
@@ -1259,6 +1337,7 @@ function showClientStatus(
   if (
     lastDate ||
     lastTypeRaw ||
+    lastName ||
     lastAmount !== ""
   ) {
 
@@ -1271,36 +1350,80 @@ function showClientStatus(
       );
     }
 
-    if (lastTypeRaw) {
+
+    const typeUpper =
+      String(lastTypeRaw || "")
+        .trim()
+        .toUpperCase();
+
+
+    if (
+      typeUpper === "KARNET" ||
+      typeUpper === "PASS"
+    ) {
+
+      parts.push(
+        lastName ||
+        "Karnet"
+      );
+
+    }
+    else if (
+      typeUpper === "INDYWIDUALNE" ||
+      typeUpper === "INDIVIDUAL"
+    ) {
+
+      parts.push(
+        "Wejścia indywidualne"
+      );
+
+    }
+    else if (lastName) {
+
+      parts.push(
+        lastName
+      );
+
+    }
+    else if (lastTypeRaw) {
+
       parts.push(
         cleanRechargeLabel(
           lastTypeRaw
         )
       );
+
     }
+
 
     if (
       lastAmount !== "" &&
       !isNaN(lastAmount)
     ) {
 
-      const typeUpper =
-        String(lastTypeRaw || "")
-          .toUpperCase();
+      if (
+        typeUpper === "INDYWIDUALNE" ||
+        typeUpper === "INDIVIDUAL"
+      ) {
 
-      const amountText =
-        (
-          typeUpper.includes("INDYWID") ||
-          typeUpper === "INDIVIDUAL"
-        )
-          ? "+" + lastAmount
-          : lastAmount + " wejść";
+        parts.push(
+          "+" + lastAmount
+        );
 
-      parts.push(
-        amountText
-      );
+      }
+      else {
+
+        parts.push(
+          "+" +
+          lastAmount +
+          " " +
+          entryWord(lastAmount)
+        );
+
+      }
 
     }
+
 
     lastRechargeText =
       parts.join(" · ");
@@ -1315,7 +1438,7 @@ function showClientStatus(
     </div>
 
     <div class="client-status-balance">
-      ${balance} ${entryWord}
+      ${balance} ${entryWord(balance)}
     </div>
 
     ${
@@ -1351,7 +1474,6 @@ function showClientStatus(
     "block";
 
 }
-
 
 function showClient(
   client,
