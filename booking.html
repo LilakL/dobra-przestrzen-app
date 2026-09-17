@@ -300,6 +300,75 @@ button {
 
 
 /************************************************
+ * STATUS KARNETU / WEJŚĆ
+ ************************************************/
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.header-brand {
+  min-width: 0;
+}
+
+.client-status-card {
+  min-width: 245px;
+  max-width: 285px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eef5f1, #f8fbf9);
+  border: 1px solid #dce9e1;
+}
+
+.client-status-label {
+  color: #68756e;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.client-status-balance {
+  margin-top: 4px;
+  color: #286247;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: bold;
+}
+
+.client-status-validity {
+  margin-top: 7px;
+  color: #536158;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.client-status-divider {
+  height: 1px;
+  margin: 12px 0 10px;
+  background: #dce9e1;
+}
+
+.client-status-last-label {
+  color: #68756e;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.client-status-last {
+  margin-top: 4px;
+  color: #34433b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+
+/************************************************
  * MOBILE
  ************************************************/
 
@@ -311,6 +380,21 @@ button {
 
   .header {
     padding: 22px 18px;
+  }
+
+  .header-top {
+    display: block;
+  }
+
+  .client-status-card {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    margin-top: 18px;
+  }
+
+  .client-status-balance {
+    font-size: 29px;
   }
 
   .events-header {
@@ -345,12 +429,26 @@ button {
 
   <div class="header">
 
-    <div class="logo">
-      Dobra Przestrzeń
-    </div>
+    <div class="header-top">
 
-    <div class="subtitle">
-      Rezerwacje
+      <div class="header-brand">
+
+        <div class="logo">
+          Dobra Przestrzeń
+        </div>
+
+        <div class="subtitle">
+          Rezerwacje
+        </div>
+
+      </div>
+
+      <div
+        id="clientStatus"
+        class="client-status-card"
+        style="display:none;"
+      ></div>
+
     </div>
 
     <div
@@ -471,6 +569,9 @@ const token =
 
 const clientBox =
   document.getElementById("client");
+
+const clientStatusBox =
+  document.getElementById("clientStatus");
 
 const scheduleBox =
   document.getElementById("schedule");
@@ -633,8 +734,6 @@ async function api(
     return await response.json();
 
   }
-
-
   /**********************************************
    * OPERACJE ODCZYTUJĄCE — GET
    **********************************************/
@@ -857,7 +956,8 @@ async function loadSchedule() {
 
 
   showClient(
-    result.client
+    result.client,
+    result.clientStatus
   );
 
 
@@ -869,11 +969,393 @@ async function loadSchedule() {
 
 
 /************************************************
- * KLIENTKA
+ * KLIENTKA + STATUS KARNETU / WEJŚĆ
  ************************************************/
 
+function statusValue(
+  source,
+  keys,
+  fallback = ""
+) {
+
+  if (!source) {
+    return fallback;
+  }
+
+  for (const key of keys) {
+
+    if (
+      source[key] !== undefined &&
+      source[key] !== null &&
+      source[key] !== ""
+    ) {
+      return source[key];
+    }
+
+  }
+
+  return fallback;
+
+}
+
+
+function formatStatusDate(
+  value
+) {
+
+  if (!value) {
+    return "";
+  }
+
+  const text =
+    String(value).trim();
+
+  const match =
+    text.match(
+      /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+  if (match) {
+
+    return (
+      match[3] +
+      "." +
+      match[2] +
+      "." +
+      match[1]
+    );
+
+  }
+
+  return text;
+
+}
+
+
+function cleanRechargeLabel(
+  value
+) {
+
+  const text =
+    String(value || "")
+      .trim();
+
+  const upper =
+    text.toUpperCase();
+
+  if (
+    upper === "LEGACY" ||
+    upper.includes("MIGRAC")
+  ) {
+    return "Saldo wejść";
+  }
+
+  if (
+    upper === "INDYWIDUALNE" ||
+    upper === "INDIVIDUAL"
+  ) {
+    return "Wejścia indywidualne";
+  }
+
+  if (
+    upper === "KARNET" ||
+    upper === "PASS"
+  ) {
+    return "Karnet";
+  }
+
+  return text;
+
+}
+
+
+function showClientStatus(
+  status
+) {
+
+  if (
+    !clientStatusBox ||
+    !status
+  ) {
+
+    if (clientStatusBox) {
+      clientStatusBox.style.display =
+        "none";
+    }
+
+    return;
+
+  }
+
+
+  const balance =
+    Number(
+      statusValue(
+        status,
+        [
+          "balance",
+          "remaining",
+          "availableBalance",
+          "entries",
+          "currentBalance"
+        ],
+        0
+      )
+    );
+
+
+  const validTo =
+    statusValue(
+      status,
+      [
+        "validTo",
+        "validUntil",
+        "end",
+        "expiryDate",
+        "expiresAt"
+      ],
+      ""
+    );
+
+
+  const daysRemainingRaw =
+    statusValue(
+      status,
+      [
+        "daysRemaining",
+        "daysLeft",
+        "remainingDays"
+      ],
+      ""
+    );
+
+
+  const daysRemaining =
+    daysRemainingRaw === ""
+      ? ""
+      : Number(daysRemainingRaw);
+
+
+  const lastRecharge =
+    status.lastRecharge ||
+    status.latestRecharge ||
+    status.lastTopUp ||
+    {};
+
+
+  const lastDate =
+    statusValue(
+      lastRecharge,
+      [
+        "date",
+        "operationDate",
+        "rechargeDate",
+        "createdAt"
+      ],
+      statusValue(
+        status,
+        [
+          "lastRechargeDate"
+        ],
+        ""
+      )
+    );
+
+
+  const lastTypeRaw =
+    statusValue(
+      lastRecharge,
+      [
+        "type",
+        "rechargeType",
+        "name",
+        "packageName"
+      ],
+      statusValue(
+        status,
+        [
+          "lastRechargeType",
+          "lastRechargeName"
+        ],
+        ""
+      )
+    );
+
+
+  const lastAmountRaw =
+    statusValue(
+      lastRecharge,
+      [
+        "amount",
+        "added",
+        "entries",
+        "quantity"
+      ],
+      statusValue(
+        status,
+        [
+          "lastRechargeAmount"
+        ],
+        ""
+      )
+    );
+
+
+  const lastAmount =
+    lastAmountRaw === ""
+      ? ""
+      : Number(lastAmountRaw);
+
+
+  const entryWord =
+    balance === 1
+      ? "wejście"
+      : (
+          balance >= 2 &&
+          balance <= 4
+            ? "wejścia"
+            : "wejść"
+        );
+
+
+  let validityText =
+    "";
+
+  if (validTo) {
+
+    validityText =
+      "Ważne do " +
+      formatStatusDate(validTo);
+
+  }
+
+  if (
+    daysRemaining !== "" &&
+    !isNaN(daysRemaining)
+  ) {
+
+    const dayWord =
+      daysRemaining === 1
+        ? "dzień"
+        : "dni";
+
+    validityText +=
+      (
+        validityText
+          ? " · "
+          : ""
+      ) +
+      "zostało " +
+      daysRemaining +
+      " " +
+      dayWord;
+
+  }
+
+
+  let lastRechargeText =
+    "";
+
+  if (
+    lastDate ||
+    lastTypeRaw ||
+    lastAmount !== ""
+  ) {
+
+    const parts =
+      [];
+
+    if (lastDate) {
+      parts.push(
+        formatStatusDate(lastDate)
+      );
+    }
+
+    if (lastTypeRaw) {
+      parts.push(
+        cleanRechargeLabel(
+          lastTypeRaw
+        )
+      );
+    }
+
+    if (
+      lastAmount !== "" &&
+      !isNaN(lastAmount)
+    ) {
+
+      const typeUpper =
+        String(lastTypeRaw || "")
+          .toUpperCase();
+
+      const amountText =
+        (
+          typeUpper.includes("INDYWID") ||
+          typeUpper === "INDIVIDUAL"
+        )
+          ? "+" + lastAmount
+          : lastAmount + " wejść";
+
+      parts.push(
+        amountText
+      );
+
+    }
+
+    lastRechargeText =
+      parts.join(" · ");
+
+  }
+
+
+  clientStatusBox.innerHTML = `
+
+    <div class="client-status-label">
+      Twój aktualny stan
+    </div>
+
+    <div class="client-status-balance">
+      ${balance} ${entryWord}
+    </div>
+
+    ${
+      validityText
+        ? `
+            <div class="client-status-validity">
+              ${validityText}
+            </div>
+          `
+        : ""
+    }
+
+    ${
+      lastRechargeText
+        ? `
+            <div class="client-status-divider"></div>
+
+            <div class="client-status-last-label">
+              Ostatnie doładowanie
+            </div>
+
+            <div class="client-status-last">
+              ${lastRechargeText}
+            </div>
+          `
+        : ""
+    }
+
+  `;
+
+
+  clientStatusBox.style.display =
+    "block";
+
+}
+
+
 function showClient(
-  client
+  client,
+  clientStatus
 ) {
 
   clientBox.style.display =
@@ -895,6 +1377,13 @@ function showClient(
     </span>
 
   `;
+
+
+  showClientStatus(
+    clientStatus ||
+    client.clientStatus ||
+    client.status
+  );
 
 }
 
@@ -1095,8 +1584,6 @@ function renderEvents(
     );
 
 }
-
-
 /************************************************
  * RENDER REGULARNYCH ZAJĘĆ
  ************************************************/
