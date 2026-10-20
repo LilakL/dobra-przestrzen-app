@@ -190,6 +190,23 @@ body {
   box-shadow: 0 3px 12px rgba(0,0,0,.05);
 }
 
+/* Status odwołanego terminu */
+.class-card.is-cancelled,
+.event-card.is-cancelled {
+  border: 1px solid #e7c4c4;
+  background: #fff9f9;
+}
+
+.cancelled-notice {
+  margin-top: 12px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: #f8e8e8;
+  color: #8a3030;
+  font-size: 14px;
+  font-weight: bold;
+}
+
 .class-top {
   display: flex;
   justify-content: space-between;
@@ -1623,6 +1640,9 @@ function renderEvents(
           "event-card";
 
 
+        const cancelled =
+          item.cancelled === true || item.cancelled === "true";
+
         const full =
           item.full;
 
@@ -1660,6 +1680,7 @@ function renderEvents(
           ${description}
 
 
+          ${cancelled ? `<div class="cancelled-notice">ZAJĘCIA ODWOŁANE – rezerwacja niedostępna</div>` : `
           <div class="event-availability">
 
             Wolne miejsca:
@@ -1670,14 +1691,14 @@ function renderEvents(
 
             z ${item.limit}
 
-          </div>
+          </div>`}
 
 
           <button
             class="reserve event-reserve"
 
             ${
-              full
+              (cancelled || full)
                 ? "disabled"
                 : ""
             }
@@ -1688,9 +1709,9 @@ function renderEvents(
           >
 
             ${
-              full
-                ? "BRAK WOLNYCH MIEJSC"
-                : "🌿 ZAREZERWUJ MIEJSCE"
+              cancelled
+                ? "ZAJĘCIA ODWOŁANE"
+                : (full ? "BRAK WOLNYCH MIEJSC" : "🌿 ZAREZERWUJ MIEJSCE")
             }
 
           </button>
@@ -1813,8 +1834,11 @@ function renderClasses(
 
 
             card.className =
-              "class-card";
+              "class-card" + (item.cancelled === true || item.cancelled === "true" ? " is-cancelled" : "");
 
+
+            const cancelled =
+              item.cancelled === true || item.cancelled === "true";
 
             const full =
               item.full;
@@ -1835,6 +1859,7 @@ function renderClasses(
               </div>
 
 
+              ${cancelled ? `<div class="cancelled-notice">ZAJĘCIA ODWOŁANE – rezerwacja niedostępna</div>` : `
               <div class="info">
 
                 Wolne miejsca:
@@ -1845,14 +1870,14 @@ function renderClasses(
 
                 z ${item.limit}
 
-              </div>
+              </div>`}
 
 
               <button
                 class="reserve"
 
                 ${
-                  full
+                  (cancelled || full)
                     ? "disabled"
                     : ""
                 }
@@ -1863,9 +1888,9 @@ function renderClasses(
               >
 
                 ${
-                  full
-                    ? "BRAK MIEJSC"
-                    : "ZAREZERWUJ"
+                  cancelled
+                    ? "ZAJĘCIA ODWOŁANE"
+                    : (full ? "BRAK MIEJSC" : "ZAREZERWUJ")
                 }
 
               </button>
@@ -1898,6 +1923,11 @@ function renderClasses(
 async function reserveClass(
   item
 ) {
+
+  if (item.cancelled === true || item.cancelled === "true") {
+    showMessage("Te zajęcia zostały odwołane. Rezerwacja jest niedostępna.", "error");
+    return;
+  }
 
   const itemType =
     item.type === "EVENT"
