@@ -384,6 +384,18 @@ onclick="showAddClient()">
 
 </button>
 
+<button id="cancelClassBtn" type="button" onclick="toggleClassCancellation()" style="display:none;width:100%;margin-top:12px;padding:15px;background:#b42318;color:white;border:0;border-radius:9px;font-weight:700;font-size:17px;cursor:pointer">ODWOŁAJ ZAJĘCIA</button>
+<div id="cancelClassPanel" style="display:none;margin-top:14px;padding:16px;border:1px solid #ddd;border-radius:10px;background:#fff">
+  <h3>Odwołanie pojedynczego terminu</h3>
+  <label for="cancelClassDate">Data zajęć</label>
+  <input id="cancelClassDate" type="date" style="display:block;width:100%;box-sizing:border-box;padding:12px;margin:8px 0 12px" onchange="resetCancellationPreview()">
+  <label for="cancelClassSchedule">Rodzaj zajęć i godzina</label>
+  <select id="cancelClassSchedule" style="display:block;width:100%;box-sizing:border-box;padding:12px;margin:8px 0 12px" onchange="resetCancellationPreview()"></select>
+  <button type="button" onclick="previewClassCancellation()" style="padding:12px;width:100%">SPRAWDŹ REZERWACJE</button>
+  <div id="cancelClassMessage" role="status" style="margin:12px 0;white-space:pre-wrap"></div>
+  <button id="confirmCancelClassBtn" type="button" onclick="executeClassCancellationUI()" style="display:none;padding:13px;width:100%;background:#b42318;color:white;border:0;border-radius:8px;font-weight:700">POTWIERDŹ ODWOŁANIE I POWIADOMIENIA</button>
+</div>
+
 </div>
 
 
@@ -603,7 +615,9 @@ async function api(
     new Set([
       "checkin",
       "recharge",
-      "addClient"
+      "addClient",
+      "classCancellationPreview",
+      "classCancellationExecute"
     ]);
 
 
@@ -797,6 +811,78 @@ async function api(
  * WYNIK
  ************************************************/
 
+// ODWOŁANIE JEDNEGO TERMINU – operatorzy Ewelina, Kornelia i Konrad.
+let dpCancellationPreviewKey = "";
+let dpCancellationBusy = false;
+function dpPolishDate() {
+  return new Intl.DateTimeFormat("en-CA", {timeZone:"Europe/Warsaw",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+}
+function dpCancellationSelection() {
+  const date = document.getElementById("cancelClassDate").value;
+  const option = document.getElementById("cancelClassSchedule").value;
+  if (!date || !option) throw new Error("Wybierz datę i zajęcia.");
+  const item = JSON.parse(option);
+  const weekdays = ["niedziela","poniedziałek","wtorek","środa","czwartek","piątek","sobota"];
+  const selectedDay = weekdays[new Date(date+"T12:00:00Z").getUTCDay()];
+  const dayFromSchedule = String(item.day || "").trim().toLocaleLowerCase("pl-PL");
+  if (selectedDay !== dayFromSchedule) throw new Error("Wybrana data nie odpowiada dniowi tygodnia tych zajęć ("+item.day+").");
+  const hour = String(item.hour||"").slice(0,5);
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hour)) throw new Error("Nieprawidłowa godzina zajęć.");
+  const now = new Date();
+  const today = dpPolishDate();
+  const timeNow = new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Warsaw",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(now);
+  if (date < today || (date === today && hour <= timeNow)) throw new Error("Nie można odwołać zajęć, które już się rozpoczęły.");
+  return {date,hour,className:item.className};
+}
+function resetCancellationPreview() {
+  dpCancellationPreviewKey = "";
+  document.getElementById("confirmCancelClassBtn").style.display = "none";
+  document.getElementById("cancelClassMessage").textContent = "";
+}
+function toggleClassCancellation() {
+  const panel = document.getElementById("cancelClassPanel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+  resetCancellationPreview();
+}
+async function previewClassCancellation() {
+  if (dpCancellationBusy) return;
+  resetCancellationPreview();
+  const message = document.getElementById("cancelClassMessage");
+  try {
+    const selected = dpCancellationSelection();
+    dpCancellationBusy = true;
+    message.textContent = "Sprawdzam rezerwacje…";
+    const result = await api("classCancellationPreview", {token:TOKEN,...selected});
+    if (!result || result.ok === false) throw new Error(result?.msg || result?.error || "Nie udało się pobrać podglądu.");
+    if (Number(result.checkedIn) > 0) throw new Error("Wykryto potwierdzone obecności. Odwołanie wymaga wyjaśnienia.");
+    dpCancellationPreviewKey = JSON.stringify(selected);
+    message.textContent = `${selected.className} – ${selected.date}, ${selected.hour}\nAktywne rezerwacje: ${result.activeReservations}\nPo zatwierdzeniu zapisane osoby otrzymają powiadomienie e-mail.`;
+    document.getElementById("confirmCancelClassBtn").style.display = "block";
+  } catch (e) {message.textContent = "Błąd: " + (e.message || e);}
+  finally {dpCancellationBusy = false;}
+}
+async function executeClassCancellationUI() {
+  if (dpCancellationBusy) return;
+  const message = document.getElementById("cancelClassMessage");
+  try {
+    const selected = dpCancellationSelection();
+    if (JSON.stringify(selected) !== dpCancellationPreviewKey) throw new Error("Najpierw ponownie sprawdź rezerwacje.");
+    if (!window.confirm(`Odwołać ${selected.className}, ${selected.date} o ${selected.hour}? Uczestniczki otrzymają e-mail.`)) return;
+    dpCancellationBusy = true;
+    document.getElementById("confirmCancelClassBtn").disabled = true;
+    message.textContent = "Odwołuję termin i przygotowuję powiadomienia…";
+    const result = await api("classCancellationExecute",{token:TOKEN,...selected});
+    if (!result || result.ok === false) throw new Error(result?.msg || result?.error || "Operacja nie została potwierdzona przez serwer.");
+    message.textContent = `Termin odwołany. Anulowane rezerwacje: ${result.reservationsCancelled ?? "?"}. E-maile wysłane: ${result.emailsSent ?? "?"}, błędy: ${result.emailsFailed ?? "?"}, brak adresu: ${result.emailsMissing ?? "?"}.`;
+    dpCancellationPreviewKey = "";
+    document.getElementById("confirmCancelClassBtn").style.display = "none";
+  } catch(e) {
+    message.textContent = "Nie potwierdzono pełnego wykonania: " + (e.message || e) + ". Sprawdź rejestr przed ponowieniem.";
+    dpCancellationPreviewKey = "";
+    document.getElementById("confirmCancelClassBtn").style.display = "none";
+  } finally {dpCancellationBusy = false;document.getElementById("confirmCancelClassBtn").disabled = false;}
+}
+
 function showResult(
   type,
   title,
@@ -989,6 +1075,20 @@ async function init(){
 
     });
 
+
+    // Dostęp do odwoływania wyłącznie dla Eweliny i Kornelii.
+    const cancellationAllowed = ["Ewelina", "Kornelia", "Konrad"].includes(String(operator.name || "").trim());
+    document.getElementById("cancelClassBtn").style.display = cancellationAllowed ? "block" : "none";
+    const cancelSelect = document.getElementById("cancelClassSchedule");
+    cancelSelect.innerHTML = "";
+    schedule.forEach(x => {
+      const option = document.createElement("option");
+      option.value = JSON.stringify({day:x.day,hour:x.hour,className:x.className});
+      option.textContent = x.day + " | " + x.hour + " | " + x.className;
+      cancelSelect.appendChild(option);
+    });
+    document.getElementById("cancelClassDate").min = dpPolishDate();
+    document.getElementById("cancelClassDate").value = dpPolishDate();
 
     rechargeOptions =
       rechargeData;
